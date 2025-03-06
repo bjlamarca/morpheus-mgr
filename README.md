@@ -1,0 +1,1 @@
+Pyside based administration app
