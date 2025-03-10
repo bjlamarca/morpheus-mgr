@@ -9,5 +9,9 @@ async def connect_to_websocket(url):
             print(message)
 
 async def send():
-    async with connect('ws://localhost:8080') as websocket:
+    async with connect('ws://192.168.55.235:8001') as websocket:
         await websocket.send('hello')
+
+
+def webs_test():
+    asyncio.run(send())
