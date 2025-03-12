@@ -1,9 +1,10 @@
 import sys
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QMenu, QGroupBox, QPushButton
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QCloseEvent
 
-from ui.utilities import load_stylesheet, WindowHandler
+from ui.utilities import WindowHandler
+from system.ultilities import load_stylesheet
 from system.websocket import webs_test
 
 
@@ -41,6 +42,10 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.websocket_grpbox)
         main_layout.addStretch()
 
+    def closeEvent(self, event: QCloseEvent):
+        #ThreadTracker().stop_all_threads()
+        self.win_handler.close_all_windows()
+        event.accept
 
     def call_window(self, name):
         self.win_handler.show_window(name)
