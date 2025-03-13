@@ -23,9 +23,6 @@ class MainWindow(QMainWindow):
         win_menu.addAction(hue_action)
         menu_bar.addMenu(win_menu)
 
-        
-        
-
         #Main Widget and Layout
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
@@ -52,10 +49,6 @@ class MainWindow(QMainWindow):
 
     def connect_websocket(self):
         webs_test()
-
-
-
-
 
 
 def start_app():

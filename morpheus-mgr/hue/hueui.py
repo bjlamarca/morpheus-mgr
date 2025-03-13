@@ -5,8 +5,9 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from PySide6.QtGui import Qt
 
 from system.ultilities import get_icon_obj
-from hue.models import HueBridge
+from hue.models import HueBridge, HueDevice, HueButton, HueLight
 from hue.utilities import HueUtilities
+from hue.bridge import HueBridgeUtils
 
 class HueMainWindow(QMainWindow):
     def __init__(self):
@@ -20,14 +21,80 @@ class HueMainWindow(QMainWindow):
         self.tab_manuf = QWidget()
         
         bridge_tab_widget = BridgeTab()
+        general_tab_widget = GeneralTab()
         self.tab_widget.addTab(bridge_tab_widget, "Bridges")
+        self.tab_widget.addTab(general_tab_widget, "General")
                
         
-        
         self.layout.addWidget(self.tab_widget)
+
+class GeneralTab(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.tab_general_layout = QVBoxLayout()
+        self.setLayout(self.tab_general_layout)
         
+        btn_layout = QHBoxLayout()
+        btn_sync_device_types = QPushButton('Sync Device Types')
+        btn_sync_device_types.clicked.connect(self.sync_device_types)
+        btn_layout.addWidget(btn_sync_device_types)
+        btn_layout.addStretch()
         
+        general_tbl_layout = QHBoxLayout()
+        self.general_table = QTableWidget()
+        self.general_table.setMinimumWidth(450)
+        general_tbl_layout.addWidget(self.general_table)
+        general_tbl_layout.addStretch()                
+
+        self.tab_general_layout.addLayout(btn_layout)
+        self.tab_general_layout.addLayout(general_tbl_layout)        
+
+    def sync_device_types(self):
+        hue_bridge = HueBridgeUtils()
+        responce = hue_bridge.sync_device_types()
+        # if responce['status'] == 'success':
+        #     self.msg_label.setText(responce['message'])
+        # elif responce['status'] == 'error':
+        #     self.msg_label.setText(responce['message'])
+        #     self.msg_label.setStyleSheet("color: red")
+    
+    def updates_msg(self, msg):
+        pass
         
+class DeviceTab(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.tab_device_layout = QVBoxLayout()
+        self.setLayout(self.tab_device_layout)
+        
+        device_tbl_layout = QHBoxLayout()
+        self.device_table = QTableWidget()
+        self.device_table.setMinimumWidth(450)
+        device_tbl_layout.addWidget(self.device_table)
+        device_tbl_layout.addStretch()                
+
+
+
+      
+    def showEvent(self, event):
+        self.fill_device_table()
+        
+    
+    def init_tab_general(self):
+        self.tab_general = QWidget()
+        self.tab_general_layout = QVBoxLayout(self.tab_general)
+        self.tab_general.setLayout(self.tab_general_layout)
+        self.tab_general.addTab(self.tab_general, "General")
+
+    def fill_device_table(self):
+        self.device_table.clear()
+        self.device_table.setColumnCount(4)
+        self.device_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.device_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.device_table.setHorizontalHeaderLabels(['Name', 'IP Address', 'Username', 'ID'])
+        device_qs = HueDevice.select()
+        for device in device_qs:
+            pass
 
 class BridgeTab(QWidget):
     def __init__(self):
@@ -81,13 +148,7 @@ class BridgeTab(QWidget):
     def showEvent(self, event):
         self.fill_bridge_table()
         
-    
-    def init_tab_general(self):
-        self.tab_general = QWidget()
-        self.tab_general_layout = QVBoxLayout(self.tab_general)
-        self.tab_general.setLayout(self.tab_general_layout)
-        self.tab_general.addTab(self.tab_general, "General")
-
+   
     def fill_bridge_table(self):
         self.bridge_table.clear()
         self.bridge_table.setColumnCount(4)

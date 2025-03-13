@@ -33,7 +33,6 @@ class HueUtilities():
             responce['message'] = 'Error adding bridge ' + str(e)
             return responce
         
-
     def edit_bridge(self, bridge_id, name, ip_addr, username, key):
         responce = {}
         if not name or not ip_addr or not username or not key:
@@ -63,7 +62,6 @@ class HueUtilities():
             responce['message'] = 'Error editing bridge ' + str(e)
             return responce
             
-
     def delete_bridge(self, bridge_id):
         responce = {}
         try:
