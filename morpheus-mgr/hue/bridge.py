@@ -1,4 +1,5 @@
 
+import traceback
 from system.logging import SystemLogger  
 from hue.models import HueBridge
 from system.models import DeviceType
@@ -21,6 +22,9 @@ class HueBridgeUtils():
         self.headers = {"hue-application-key": self.username}
 
 
+    def sync_bridge(self, bridge_id, message_function=None):
+        msg_dict = {}
+
     def sync_device_types(self, bridge_id, message_function=None):
         hue_dev = HueDeviceTypes()
         msg_dict = {}
@@ -32,9 +36,9 @@ class HueBridgeUtils():
             device_list = hue_dev.get_device_list()
             for device in device_list:
                 if device['system_sync']:
-                    dev_type = DeviceType.get_or_none(DeviceType.device_type == device['device_type'])
+                    dev_type = DeviceType.get_or_none(DeviceType.name == device['device_type'])
                     if not dev_type:
-                        dev_type = DeviceType.create(device_type=device['device_type'], display_name=device['display_name'], capability=device['capability'])
+                        dev_type = DeviceType.create(name=device['device_type'], display_name=device['display_name'], interface='hue', capability=device['capability'])
                         msg_dict['status'] = 'info'
                         msg_dict['message'] = 'Device type created: ' + device['display_name']
                         if message_function:
@@ -48,7 +52,7 @@ class HueBridgeUtils():
         
 
         except Exception as e:
-            logger.log('sync_device_types', 'Error syncing device types.', 'Error: ' + str(e), 'ERROR')
+            logger.log('sync_device_types', 'Error syncing device types.', str(e) + traceback.format_exc(), 'ERROR')
             msg_dict['status'] = 'error'
             msg_dict['message'] = 'Error syncing device types. ' + str(e)
             if message_function:
@@ -80,23 +84,19 @@ class HueDeviceTypes():
                 'display_name': 'Hue Color Light',
                 'device_type': 'HUECOLORLAMP',
                 'capability': 'color, switch, dimmer',
-                'morph_sync': True
+                'system_sync': True
 
             },
             {
                 'display_name': 'Hue Dimmer Switch',
-                'hue_device_type': 'HUEDIMSWITCH',
-                'morph_name': 'HUEDIMSWITCH',
-                'morph_display_name': 'Hue Dimmer Switch',
-                'morph_sync': False
+                'device_type': 'HUEDIMSWITCH',
+                'system_sync': False
 
             },
             {
                 'display_name': 'Hub',
-                'hue_device_type': 'HUB',
-                'morph_name': 'HUEHUB',
-                'morph_display_name': 'Hue Hub',
-                'morph_sync': False
+                'device_type': 'HUB',
+                'system_sync': False
 
             },
             

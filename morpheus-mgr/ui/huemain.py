@@ -35,35 +35,58 @@ class GeneralTab(QWidget):
         super().__init__()
         self.tab_general_layout = QVBoxLayout()
         self.setLayout(self.tab_general_layout)
-        
+        horz_layout = QHBoxLayout()
+
+        btn_grpbox = QGroupBox()
         btn_layout = QHBoxLayout()
         btn_sync_device_types = QPushButton('Sync Device Types')
         btn_sync_device_types.clicked.connect(self.sync_device_types)
         btn_layout.addWidget(btn_sync_device_types)
         btn_layout.addStretch()
+        btn_grpbox.setLayout(btn_layout)
 
+        btn_bridge_grpbox = QGroupBox()
+        btn_bridge_Vlayout = QVBoxLayout()
+        combo_layout = QHBoxLayout()
+        self.bridge_combo = QComboBox()
+        self.bridge_combo.addItem('Select Bridge')
+        bridge_qs = HueBridge.select()
+        for bridge in bridge_qs:
+            self.bridge_combo.addItem(bridge.name, bridge.id)
+        combo_layout.addWidget(self.bridge_combo)
+        combo_layout.addStretch()
+        btn_bridge_Vlayout.addLayout(combo_layout)
+        btn_bridge_grpbox.setLayout(btn_bridge_Vlayout)
+
+        
+        
+        btn_sync_bridge = QPushButton('Sync Bridge')
+        btn_sync_bridge.clicked.connect(self.sync_bridge)
         self.log_msg = LogMsgBox()
-        self.tab_general_layout.addWidget(self.log_msg)
+        
 
-        general_tbl_layout = QHBoxLayout()
-        self.general_table = QTableWidget()
-        self.general_table.setMinimumWidth(450)
-        general_tbl_layout.addWidget(self.general_table)
-        general_tbl_layout.addStretch()                
+               
 
-        self.tab_general_layout.addLayout(btn_layout)
-        self.tab_general_layout.addLayout(general_tbl_layout)     
+        horz_layout.addWidget(btn_grpbox)
+        horz_layout.addWidget(btn_bridge_grpbox)
+        horz_layout.addWidget(self.log_msg)
+        horz_layout.addStretch()
 
-        self.log_msg.set_msg('<p style="color:aqua">Hello</p><p style="color:red">This is red</p>')
+        self.tab_general_layout.addLayout(horz_layout)
+        self.tab_general_layout.addStretch()
+        
+
+        self.log_msg.hide()
 
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
-        responce = hue_bridge.sync_device_types()
-        # if responce['status'] == 'success':
-        #     self.msg_label.setText(responce['message'])
-        # elif responce['status'] == 'error':
-        #     self.msg_label.setText(responce['message'])
-        #     self.msg_label.setStyleSheet("color: red")
+        responce = hue_bridge.sync_device_types(1, self.log_msg.set_msg)
+
+    def sync_bridge(self):
+        bridge_id = self.bridge_combo.currentData()
+        hue_bridge = HueBridgeUtils()
+        responce = hue_bridge.sync_bridge(bridge_id, self.log_msg.set_msg)
+        
     
     def updates_msg(self, msg):
         pass

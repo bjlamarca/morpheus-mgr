@@ -6,22 +6,44 @@ from PySide6.QtGui import Qt
 class LogMsgBox(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.html = ''
-        self.setFixedHeight(100)
+        self.html_list = []
+        self.setMinimumHeight(150)
         layout = QVBoxLayout()
+        
+        txt_layout = QHBoxLayout()
         self.txt_edit = QTextEdit()
-        layout.addWidget(self.txt_edit)
+        self.txt_edit.setReadOnly(True)
+        self.txt_edit.setStyleSheet("background-color: black;")
+        txt_layout.addWidget(self.txt_edit)
+        
+        btn_layout = QHBoxLayout()
+        btn_close = QPushButton('Close')
+        btn_close.clicked.connect(self.hide)
+        btn_layout.addWidget(btn_close)
+        btn_layout.addStretch()
+        
+        
+        layout.addLayout(txt_layout)
+        layout.addLayout(btn_layout)
+        
         self.setLayout(layout)
 
     def set_msg(self, msg_dict):
-        if msg_dict['type'] == 'error':
-            self.html = self.html + '<p style="color:red;">' + msg_dict['msg'] + '</p>'
-        elif msg_dict['type'] == 'info':
-            self.html = self.html + '<p style="color:blue;">' + msg_dict['msg'] + '</p>'
-        elif msg_dict['type'] == 'success':
-            self.html = self.html + '<p style="color:green;">' + msg_dict['msg'] + '</p>'
+        self.show()
+        if msg_dict['status'] == 'error':
+            self.html_list.append('<li style="color:red;">' + msg_dict['message'] + '</li>')
+        elif msg_dict['status'] == 'info':
+            self.html_list.append('<li style="color:aqua;">' + msg_dict['message'] + '</li>')
+        elif msg_dict['status'] == 'success':
+            self.html_list.append('<li style="color:lawngreen;">' + msg_dict['message'] + '</li>')
         
-        self.txt_edit.setHtml(self.html)
+        html = '<ul style="list-style-type:none;">' + ''.join(self.html_list) + '</ul>'
+
+        self.txt_edit.setHtml(html)
+
+    def clear_msg(self):
+        self.html = ''
+        self.txt_edit.clear()
 
     
 

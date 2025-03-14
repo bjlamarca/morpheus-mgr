@@ -1,7 +1,8 @@
 import sys
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QMenu, QGroupBox, QPushButton
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QMenu, QGroupBox, QPushButton, QMdiArea
 from PySide6.QtGui import QAction, QCloseEvent
+from PySide6.QtCore import Qt
 
 from ui.utilities import WindowHandler
 from system.ultilities import load_stylesheet
@@ -49,6 +50,32 @@ class MainWindow(QMainWindow):
 
     def connect_websocket(self):
         webs_test()
+
+
+class MDIWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.mdi_area = QMdiArea()
+        self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setCentralWidget(self.mdi_area)
+
+        #self.mdi_area.subWindowActivated.connect(self.update_menus)
+
+        self.create_actions()
+        self.create_menus()
+        self.create_tool_bars()
+        self.create_status_bar()
+        self.update_menus()
+
+        self.read_settings()
+
+        self.setWindowTitle("Morpheus Manager")
+
+    def create_menus(self):
+        pass
+        
 
 
 def start_app():
