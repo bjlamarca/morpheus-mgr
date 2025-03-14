@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 
-from hue.hueui import HueMainWindow
+from ui.huemain import HueMainWindow
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

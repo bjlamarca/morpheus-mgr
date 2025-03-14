@@ -8,6 +8,7 @@ from system.ultilities import get_icon_obj
 from hue.models import HueBridge, HueDevice, HueButton, HueLight
 from hue.utilities import HueUtilities
 from hue.bridge import HueBridgeUtils
+from ui.widgets import YesNoBox, LogMsgBox
 
 class HueMainWindow(QMainWindow):
     def __init__(self):
@@ -20,10 +21,11 @@ class HueMainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         self.tab_manuf = QWidget()
         
-        bridge_tab_widget = BridgeTab()
         general_tab_widget = GeneralTab()
-        self.tab_widget.addTab(bridge_tab_widget, "Bridges")
+        bridge_tab_widget = BridgeTab()
         self.tab_widget.addTab(general_tab_widget, "General")
+        self.tab_widget.addTab(bridge_tab_widget, "Bridges")
+        
                
         
         self.layout.addWidget(self.tab_widget)
@@ -39,7 +41,10 @@ class GeneralTab(QWidget):
         btn_sync_device_types.clicked.connect(self.sync_device_types)
         btn_layout.addWidget(btn_sync_device_types)
         btn_layout.addStretch()
-        
+
+        self.log_msg = LogMsgBox()
+        self.tab_general_layout.addWidget(self.log_msg)
+
         general_tbl_layout = QHBoxLayout()
         self.general_table = QTableWidget()
         self.general_table.setMinimumWidth(450)
@@ -47,7 +52,9 @@ class GeneralTab(QWidget):
         general_tbl_layout.addStretch()                
 
         self.tab_general_layout.addLayout(btn_layout)
-        self.tab_general_layout.addLayout(general_tbl_layout)        
+        self.tab_general_layout.addLayout(general_tbl_layout)     
+
+        self.log_msg.set_msg('<p style="color:aqua">Hello</p><p style="color:red">This is red</p>')
 
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
@@ -116,9 +123,9 @@ class BridgeTab(QWidget):
         bridge_btn_layout.addWidget(btn_edit_bridge)
         bridge_btn_layout.addWidget(btn_del_bridge)
         bridge_btn_layout.addStretch()
-
+        
         bridge_msgbox_layout = QHBoxLayout()
-        self.bridge_msgbox = MessageBox()
+        self.bridge_msgbox = YesNoBox()
         bridge_msgbox_layout.addWidget(self.bridge_msgbox)
         bridge_msgbox_layout.addStretch()
         
@@ -283,31 +290,3 @@ class BridgeAddEdit(QDialog):
             self.msg_label.setText(responce['message'])
             self.msg_label.setStyleSheet("color: red")
 
-
-class MessageBox(QGroupBox):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setFixedHeight(100)
-        layout = QVBoxLayout()
-        self.lbl_msg = QLabel()
-        layout.addWidget(self.lbl_msg)
-        btn_layout = QHBoxLayout()
-        btn_yes = QPushButton('Yes')
-        btn_yes.clicked.connect(lambda: self.return_func('yes', self.value))
-        btn_no = QPushButton('No')
-        btn_no.clicked.connect(lambda: self.return_func('no', self.value))
-        btn_layout.addWidget(btn_yes)
-        btn_layout.addWidget(btn_no)
-        layout.addLayout(btn_layout)
-        
-        layout.addStretch()
-        self.setLayout(layout)
-
-    def set_msg(self, msg):
-        self.lbl_msg.setText(msg)
-
-    def set_return_func(self, func, value=0):
-        self.return_func = func
-        self.value = value
-
-        
