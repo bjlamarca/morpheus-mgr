@@ -8,7 +8,7 @@ from system.ultilities import get_icon_obj
 from hue.models import HueBridge, HueDevice, HueButton, HueLight
 from hue.utilities import HueUtilities
 from hue.bridge import HueBridgeUtils
-from ui.widgets import YesNoBox, LogMsgBox
+from ui.widgets import YesNoBox, LogMsgBox, CircleIndicatorWidget
 
 class HueMainWindow(QMainWindow):
     def __init__(self):
@@ -25,9 +25,6 @@ class HueMainWindow(QMainWindow):
         bridge_tab_widget = BridgeTab()
         self.tab_widget.addTab(general_tab_widget, "General")
         self.tab_widget.addTab(bridge_tab_widget, "Bridges")
-        
-               
-        
         self.layout.addWidget(self.tab_widget)
 
 class GeneralTab(QWidget):
@@ -73,6 +70,8 @@ class GeneralTab(QWidget):
         horz_layout.addStretch()
 
         self.tab_general_layout.addLayout(horz_layout)
+        gree_circle = CircleIndicatorWidget()
+        self.tab_general_layout.addWidget(gree_circle)
         self.tab_general_layout.addStretch()
         
 

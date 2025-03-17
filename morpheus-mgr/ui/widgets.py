@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel,
                                QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
                                QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout, QTextEdit)
-from PySide6.QtGui import Qt
+from PySide6.QtGui import Qt, QPainter, QColor, QBrush
 
 class LogMsgBox(QFrame):
     def __init__(self, parent=None):
@@ -72,5 +72,24 @@ class YesNoBox(QGroupBox):
     def set_return_func(self, func, value=0):
         self.return_func = func
         self.value = value
+
+class CircleIndicatorWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Green Circle")
+        self.setFixedSize(25, 25)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # Set brush color to green
+        brush = QBrush(QColor(0, 255, 0))
+        painter.setBrush(brush)
+
+        # Draw the circle, centered in the widget
+        diameter = min(self.width(), self.height())
+        painter.drawEllipse(self.width()/2 - diameter/2, self.height()/2 - diameter/2, diameter, diameter)
+
 
         
