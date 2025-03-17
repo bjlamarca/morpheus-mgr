@@ -97,6 +97,6 @@ def start_app():
     app = QApplication(sys.argv)
     app.setStyleSheet(load_stylesheet())
     window = MainWindow()
-    window.setGeometry(200, 200, 800, 200)
+    window.setGeometry(200, 200, 1000, 800)
     window.show()
     app.exec_()

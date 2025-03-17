@@ -54,7 +54,7 @@ class HueLight(BaseModel):
     
 
 class HueButton(BaseModel):
-    device_type = ForeignKeyField(model=DeviceType, backref='hue_buttons')
+    device = ForeignKeyField(model=HueDevice, backref='hue_buttons')
     rid = CharField()
     name = CharField()
     updated = DateTimeField(null=True)

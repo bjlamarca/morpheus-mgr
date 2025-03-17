@@ -42,49 +42,56 @@ class GeneralTab(QWidget):
         btn_layout.addStretch()
         btn_grpbox.setLayout(btn_layout)
 
-        btn_bridge_grpbox = QGroupBox()
-        btn_bridge_Vlayout = QVBoxLayout()
+        bridge_grpbox = QGroupBox()
+        bridge_Vlayout = QVBoxLayout()
         combo_layout = QHBoxLayout()
         self.bridge_combo = QComboBox()
-        self.bridge_combo.addItem('Select Bridge')
-        bridge_qs = HueBridge.select()
-        for bridge in bridge_qs:
-            self.bridge_combo.addItem(bridge.name, bridge.id)
+        
         combo_layout.addWidget(self.bridge_combo)
         combo_layout.addStretch()
-        btn_bridge_Vlayout.addLayout(combo_layout)
-        btn_bridge_grpbox.setLayout(btn_bridge_Vlayout)
 
-        
-        
         btn_sync_bridge = QPushButton('Sync Bridge')
         btn_sync_bridge.clicked.connect(self.sync_bridge)
+
+        bridge_Vlayout.addLayout(combo_layout)
+        bridge_Vlayout.addWidget(btn_sync_bridge)
+        
+        bridge_grpbox.setLayout(bridge_Vlayout)
+
         self.log_msg = LogMsgBox()
         
-
-               
-
         horz_layout.addWidget(btn_grpbox)
-        horz_layout.addWidget(btn_bridge_grpbox)
-        horz_layout.addWidget(self.log_msg)
+        horz_layout.addWidget(bridge_grpbox)
         horz_layout.addStretch()
 
         self.tab_general_layout.addLayout(horz_layout)
-        gree_circle = CircleIndicatorWidget()
-        self.tab_general_layout.addWidget(gree_circle)
+        self.tab_general_layout.addWidget(self.log_msg)
+        # green_circle = CircleIndicatorWidget()
+        # self.tab_general_layout.addWidget(green_circle)
         self.tab_general_layout.addStretch()
         
 
         self.log_msg.hide()
+        self.fill_bridge_combo()
+
+    def fill_bridge_combo(self):
+        self.bridge_combo.clear()
+        self.bridge_combo.addItem('Select Bridge', 0)
+        bridge_qs = HueBridge.select()
+        for bridge in bridge_qs:
+            self.bridge_combo.addItem(bridge.name, bridge.id)
+
 
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
-        responce = hue_bridge.sync_device_types(1, self.log_msg.set_msg)
+        responce = hue_bridge.sync_device_types(self.log_msg.set_msg)
 
     def sync_bridge(self):
         bridge_id = self.bridge_combo.currentData()
-        hue_bridge = HueBridgeUtils()
-        responce = hue_bridge.sync_bridge(bridge_id, self.log_msg.set_msg)
+        print(bridge_id)
+        if bridge_id > 0:            
+            hue_bridge = HueBridgeUtils()
+            responce = hue_bridge.sync_bridge(bridge_id, self.log_msg.set_msg)
         
     
     def updates_msg(self, msg):
