@@ -41,13 +41,13 @@ class HueDevice(BaseModel):
 class HueLight(BaseModel):
     device = ForeignKeyField(model=HueDevice, on_delete='CASCADE'),
     rid = CharField()
-    switch = CharField() #on or off
-    dimming = IntegerField()
+    switch = CharField(null=True) #on or off
+    dimming = IntegerField(null=True)
     gamut_type = CharField()
-    red = IntegerField()
-    green = IntegerField()
-    blue = IntegerField()
-    effect = CharField()
+    red = IntegerField(null=True)
+    green = IntegerField(null=True)
+    blue = IntegerField(null=True)
+    effect = CharField(null=True)
 
     def __str__(self):
         return self.rid

@@ -34,19 +34,18 @@ class HueBridgeUtils():
         try:
             device_list = hue_dev_types.get_device_list()
             for device in device_list:
-                if device['system_sync']:
-                    dev_type = DeviceType.get_or_none(DeviceType.name == device['device_type'])
-                    if not dev_type:
-                        dev_type = DeviceType.create(name=device['device_type'], display_name=device['display_name'], interface='hue', capability=device['capability'])
-                        msg_dict['status'] = 'info'
-                        msg_dict['message'] = 'Device type created: ' + device['display_name']
-                        if message_function:
-                            message_function(msg_dict)
-                    else:
-                        msg_dict['status'] = 'info'
-                        msg_dict['message'] = 'Device type exists: ' + device['display_name']
-                        if message_function:
-                            message_function(msg_dict)
+                dev_type = DeviceType.get_or_none(DeviceType.name == device['device_type'])
+                if not dev_type:
+                    dev_type = DeviceType.create(name=device['device_type'], display_name=device['display_name'], interface='hue', capability=device['capability'])
+                    msg_dict['status'] = 'info'
+                    msg_dict['message'] = 'Device type created: ' + device['display_name']
+                    if message_function:
+                        message_function(msg_dict)
+                else:
+                    msg_dict['status'] = 'info'
+                    msg_dict['message'] = 'Device type exists: ' + device['display_name']
+                    if message_function:
+                        message_function(msg_dict)
 
         
 
@@ -67,7 +66,7 @@ class HueBridgeUtils():
                 message_function(msg_dict)
             return msg_dict
             
-    def sync_bridge(self, hub_id, message_function=None):
+    def sync_bridge(self, bridge_id, message_function=None):
         try:
                 hue_dev_types = HueDeviceTypes()
                 msg_dict = {}
@@ -75,8 +74,8 @@ class HueBridgeUtils():
                     msg_dict['status'] = 'info'
                     msg_dict['message'] = 'Syncing Hue Devices'
                     message_function(msg_dict)
-                self.hub_id = hub_id
-                self.set_url(self.hub_id)
+                self.bridge_id = bridge_id
+                self.set_url(self.bridge_id)
                 bridge_devices = self.get_items('devices')
                 for device in bridge_devices:
                     device_obj = HueDevice.get_or_none(HueDevice.hue_id == device['id'])
@@ -92,12 +91,13 @@ class HueBridgeUtils():
                         #create parent device
                         new_device = HueDevice(
                             product_name = device['product_data']['product_name'],
-                            hub_id = self.hub_id,
-                            bridge_id = device['id'],
+                            bridge_id = self.bridge_id,
+                            hue_id = device['id'],
                             model_id = device['product_data']['model_id'],
                             manufacturer_name = device['product_data']['manufacturer_name'],
                             software_version = device['product_data']['software_version'],
                             name = device['metadata']['name'],
+                            morph_sync = False,
                         )
                         services = device['services']
                         #Get the zigbee service rid
@@ -272,12 +272,14 @@ class HueDeviceTypes():
             {
                 'display_name': 'Hue Dimmer Switch',
                 'device_type': 'HUEDIMSWITCH',
+                'capability': 'switch, dimmer',
                 'system_sync': False
 
             },
             {
                 'display_name': 'Hue Bridge',
                 'device_type': 'HUEBRIDGE',
+                'capability': 'bridge',
                 'system_sync': False
 
             },
