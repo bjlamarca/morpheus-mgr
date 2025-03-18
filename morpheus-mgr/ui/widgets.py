@@ -2,10 +2,13 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
                                QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout, QTextEdit)
 from PySide6.QtGui import Qt, QPainter, QColor, QBrush
+from system.signals import Signal
 
 class LogMsgBox(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
+        print('Parent: ', parent)
+        
         self.html_list = []
         self.setMinimumHeight(150)
         layout = QVBoxLayout()
@@ -29,7 +32,8 @@ class LogMsgBox(QFrame):
         self.setLayout(layout)
 
     def set_msg(self, msg_dict):
-        self.show()
+        if msg_dict['status'] == 'clear':
+            self.txt_edit.clear()
         if msg_dict['status'] == 'error':
             self.html_list.append('<li style="color:red;">' + msg_dict['message'] + '</li>')
         elif msg_dict['status'] == 'info':
@@ -39,12 +43,10 @@ class LogMsgBox(QFrame):
         
         html = '<ul style="list-style-type:none;">' + ''.join(self.html_list) + '</ul>'
 
+        print('LogMsgBox: ', msg_dict)
         self.txt_edit.setHtml(html)
 
-    def clear_msg(self):
-        self.html = ''
-        self.txt_edit.clear()
-
+    
     
 
 class YesNoBox(QGroupBox):

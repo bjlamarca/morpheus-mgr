@@ -1,4 +1,5 @@
 import sys
+import threading
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel,
                                QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
                                QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout)
@@ -9,6 +10,7 @@ from hue.models import HueBridge, HueDevice, HueButton, HueLight
 from hue.utilities import HueUtilities
 from hue.bridge import HueBridgeUtils
 from ui.widgets import YesNoBox, LogMsgBox, CircleIndicatorWidget
+from system.signals import Signal
 
 class HueMainWindow(QMainWindow):
     def __init__(self):
@@ -30,6 +32,7 @@ class HueMainWindow(QMainWindow):
 class GeneralTab(QWidget):
     def __init__(self):
         super().__init__()
+        signal = Signal()
         self.tab_general_layout = QVBoxLayout()
         self.setLayout(self.tab_general_layout)
         horz_layout = QHBoxLayout()
@@ -58,7 +61,7 @@ class GeneralTab(QWidget):
         
         bridge_grpbox.setLayout(bridge_Vlayout)
 
-        self.log_msg = LogMsgBox()
+        self.log_msg = LogMsgBox(self)
         
         horz_layout.addWidget(btn_grpbox)
         horz_layout.addWidget(bridge_grpbox)
@@ -71,8 +74,9 @@ class GeneralTab(QWidget):
         self.tab_general_layout.addStretch()
         
 
-        self.log_msg.hide()
+        #self.log_msg.hide()
         self.fill_bridge_combo()
+        signal.connect('hue_mgr', self.updates_msg)
 
     def fill_bridge_combo(self):
         self.bridge_combo.clear()
@@ -84,18 +88,19 @@ class GeneralTab(QWidget):
 
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
-        responce = hue_bridge.sync_device_types(self.log_msg.set_msg)
+        #responce = hue_bridge.sync_device_types(self.log_msg)
 
     def sync_bridge(self):
         bridge_id = self.bridge_combo.currentData()
         print(bridge_id)
         if bridge_id > 0:            
             hue_bridge = HueBridgeUtils()
-            responce = hue_bridge.sync_bridge(bridge_id, self.log_msg.set_msg)
-        
-    
-    def updates_msg(self, msg):
-        pass
+            responce = hue_bridge.sync_bridge(bridge_id, 'hue_mgr')
+
+           
+    def updates_msg(self, sender, msg_dict):
+        print('Signal received', sender, msg_dict)
+        #self.log_msg.set_msg(msg_dict)
         
 class DeviceTab(QWidget):
     def __init__(self):
