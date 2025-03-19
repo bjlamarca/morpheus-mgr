@@ -79,7 +79,7 @@ class HueBridgeUtils():
     def sync_bridge_thread(self, bridge_id, signal_grp=None):
         try:
                 hue_dev_types = HueDeviceTypes()
-                msg_dict = {}
+                msg_dict = {'status': '', 'message': ''}
                 if signal_grp:
                     signal = Signal() 
                     msg_dict['status'] = 'clear'

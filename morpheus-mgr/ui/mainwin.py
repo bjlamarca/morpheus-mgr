@@ -12,7 +12,7 @@ from system.websocket import webs_test
 
 
 
-class MainWindowOld(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Morpheus")
@@ -31,15 +31,7 @@ class MainWindowOld(QMainWindow):
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
 
-        self.websocket_grpbox = QGroupBox("Websocket")
-        websocket_layout = QHBoxLayout()
-        btn_connect = QPushButton("Connect")
-        btn_connect.clicked.connect(self.connect_websocket)
-        websocket_layout.addWidget(btn_connect)
-        websocket_layout.addStretch()
-        self.websocket_grpbox.setLayout(websocket_layout)
-        
-        main_layout.addWidget(self.websocket_grpbox)
+    
         main_layout.addStretch()
 
     def closeEvent(self, event: QCloseEvent):
@@ -54,7 +46,7 @@ class MainWindowOld(QMainWindow):
         webs_test()
 
 
-class MainWindow(QMainWindow):
+class MainWindowMDI(QMainWindow):
     def __init__(self):
         super().__init__()
 
@@ -97,6 +89,19 @@ def start_app():
     app = QApplication(sys.argv)
     app.setStyleSheet(load_stylesheet())
     window = MainWindow()
-    window.setGeometry(200, 200, 1000, 800)
-    window.show()
+    #window.setGeometry(200, 200, 1000, 800)
+    window.showMaximized()
     app.exec_()
+
+
+
+
+    # self.websocket_grpbox = QGroupBox("Websocket")
+        # websocket_layout = QHBoxLayout()
+        # btn_connect = QPushButton("Connect")
+        # btn_connect.clicked.connect(self.connect_websocket)
+        # websocket_layout.addWidget(btn_connect)
+        # websocket_layout.addStretch()
+        # self.websocket_grpbox.setLayout(websocket_layout)
+        
+        #main_layout.addWidget(self.websocket_grpbox)

@@ -1,16 +1,18 @@
 import sys
-import threading
+import threading, asyncio
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel,
                                QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
                                QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout)
 from PySide6.QtGui import Qt
 
+
 from system.ultilities import get_icon_obj
 from hue.models import HueBridge, HueDevice, HueButton, HueLight
 from hue.utilities import HueUtilities
 from hue.bridge import HueBridgeUtils
-from ui.widgets import YesNoBox, LogMsgBox, CircleIndicatorWidget
+from ui.widgets import YesNoBox, LogViewer
 from system.signals import Signal
+
 
 class HueMainWindow(QMainWindow):
     def __init__(self):
@@ -61,17 +63,19 @@ class GeneralTab(QWidget):
         
         bridge_grpbox.setLayout(bridge_Vlayout)
 
-        self.log_msg = LogMsgBox(self)
+        self.log_viewer = LogViewer()
+        self.log_viewer.resize(400, 200)
+                
         
         horz_layout.addWidget(btn_grpbox)
         horz_layout.addWidget(bridge_grpbox)
         horz_layout.addStretch()
 
         self.tab_general_layout.addLayout(horz_layout)
-        self.tab_general_layout.addWidget(self.log_msg)
-        # green_circle = CircleIndicatorWidget()
-        # self.tab_general_layout.addWidget(green_circle)
+        self.tab_general_layout.addWidget(self.log_viewer)
         self.tab_general_layout.addStretch()
+        
+        self.log_viewer.show()
         
 
         #self.log_msg.hide()
@@ -88,6 +92,9 @@ class GeneralTab(QWidget):
 
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
+        self.log_viewer.update_text('Syncing Device Types')
+        self.log_viewer.repaint()
+        self.log_viewer.update()
         #responce = hue_bridge.sync_device_types(self.log_msg)
 
     def sync_bridge(self):
@@ -100,7 +107,11 @@ class GeneralTab(QWidget):
            
     def updates_msg(self, sender, msg_dict):
         print('Signal received', sender, msg_dict)
-        #self.log_msg.set_msg(msg_dict)
+        self.log_viewer.update_text('Syncing Device Types')
+        self.log_viewer.repaint()
+        self.log_viewer.update()
+  
+
         
 class DeviceTab(QWidget):
     def __init__(self):

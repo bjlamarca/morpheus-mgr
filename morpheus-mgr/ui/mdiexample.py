@@ -10,10 +10,10 @@ from functools import partial
 import sys
 
 from PySide6.QtCore import (QByteArray, QFile, QFileInfo, QSettings,
-                            QSaveFile, QTextStream, Qt, Slot)
-from PySide6.QtGui import QAction, QIcon, QKeySequence
+                            QSaveFile, QTextStream, Qt, Slot, QRect, QPoint)
+from PySide6.QtGui import QAction, QIcon, QKeySequence, QPainter, QColor, QFont, QPen, QPixmap
 from PySide6.QtWidgets import (QApplication, QFileDialog, QMainWindow,
-                               QMdiArea, QMessageBox, QTextEdit)
+                               QMdiArea, QMessageBox, QTextEdit, QWidget)
 
 import PySide6.QtExampleIcons  # noqa: F401
 
@@ -426,21 +426,93 @@ class MainWindow(QMainWindow):
             self._mdi_area.setActiveSubWindow(window)
 
 
+# if __name__ == '__main__':
+#     argument_parser = ArgumentParser(description='MDI Example',
+#                                      formatter_class=RawTextHelpFormatter)
+#     argument_parser.add_argument("files", help="Files",
+#                                  nargs='*', type=str)
+#     options = argument_parser.parse_args()
+
+#     app = QApplication(sys.argv)
+
+#     icon_paths = QIcon.themeSearchPaths()
+#     QIcon.setThemeSearchPaths(icon_paths + [":/qt-project.org/icons"])
+#     QIcon.setFallbackThemeName("example_icons")
+
+#     main_win = MainWindow()
+#     for f in options.files:
+#         main_win.load(f)
+#     main_win.show()
+#     sys.exit(app.exec())
+
+
+class MyWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Draw Text Example")
+        self.setGeometry(100, 100, 400, 200)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(QColor(255, 255, 255))
+        font = QFont()
+        font.setPointSize(20)
+        painter.setFont(font)
+        text_rect = QRect(10, 10, 380, 180)
+        painter.drawText(text_rect, Qt.AlignCenter, "Hello, PySide6!")
+        painter.end()
+
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     window = MyWidget()
+#     window.show()
+#     sys.exit(app.exec())
+
+
+class PaintCanvas(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.drawing = False
+        self.last_point = QPoint()
+        self.pen_color = QColor(0, 0, 0)  # Default black color
+        self.pixmap = QPixmap(self.size())
+        self.pixmap.fill(Qt.GlobalColor.white)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawPixmap(0, 0, self.pixmap)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.drawing = True
+            self.last_point = event.position().toPoint()
+
+    def mouseMoveEvent(self, event):
+        if self.drawing:
+            painter = QPainter(self.pixmap)
+            painter.setPen(QPen(self.pen_color, 3, Qt.PenStyle.SolidLine))
+            painter.drawLine(self.last_point, event.position().toPoint())
+            self.last_point = event.position().toPoint()
+            self.update()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.drawing = False
+
+    def resizeEvent(self, event):
+         new_pixmap = QPixmap(event.size())
+         new_pixmap.fill(Qt.GlobalColor.white)
+         painter = QPainter(new_pixmap)
+         painter.drawPixmap(0, 0, self.pixmap)
+         self.pixmap = new_pixmap
+         self.update()
+
+    def set_pen_color(self, color):
+        self.pen_color = color
+
 if __name__ == '__main__':
-    argument_parser = ArgumentParser(description='MDI Example',
-                                     formatter_class=RawTextHelpFormatter)
-    argument_parser.add_argument("files", help="Files",
-                                 nargs='*', type=str)
-    options = argument_parser.parse_args()
-
     app = QApplication(sys.argv)
-
-    icon_paths = QIcon.themeSearchPaths()
-    QIcon.setThemeSearchPaths(icon_paths + [":/qt-project.org/icons"])
-    QIcon.setFallbackThemeName("example_icons")
-
-    main_win = MainWindow()
-    for f in options.files:
-        main_win.load(f)
-    main_win.show()
+    canvas = PaintCanvas()
+    canvas.resize(800, 600)
+    canvas.show()
     sys.exit(app.exec())

@@ -1,20 +1,23 @@
-from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel,
-                               QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
-                               QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout, QTextEdit)
-from PySide6.QtGui import Qt, QPainter, QColor, QBrush
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QFrame,
+                             QGroupBox, QGraphicsView, QGraphicsScene, QGraphicsTextItem)
+from PySide6.QtGui import Qt, QPainter, QColor, QBrush, QFont, QPixmap, QPen
+from PySide6.QtCore import QRect
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from system.signals import Signal
+
+
 
 class LogMsgBox(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
-        print('Parent: ', parent)
+        signal = Signal()
         
         self.html_list = []
         self.setMinimumHeight(150)
         layout = QVBoxLayout()
         
         txt_layout = QHBoxLayout()
-        self.txt_edit = QTextEdit()
+        self.txt_edit = QLineEdit()
         self.txt_edit.setReadOnly(True)
         self.txt_edit.setStyleSheet("background-color: black;")
         txt_layout.addWidget(self.txt_edit)
@@ -30,6 +33,7 @@ class LogMsgBox(QFrame):
         layout.addLayout(btn_layout)
         
         self.setLayout(layout)
+        #signal.connect('hue_mgr', self.msg_update)
 
     def set_msg(self, msg_dict):
         if msg_dict['status'] == 'clear':
@@ -44,9 +48,70 @@ class LogMsgBox(QFrame):
         html = '<ul style="list-style-type:none;">' + ''.join(self.html_list) + '</ul>'
 
         print('LogMsgBox: ', msg_dict)
-        self.txt_edit.setHtml(html)
+        self.txt_edit.setText(html)
 
+    def msg_update(self, sender, msg):
+        print('LogMsgBox: ', msg)
+        self.txt_edit.setText(str(msg))
+
+class Paint(QWidget):
+        def __init__(self):
+            super().__init__()
+            print('LogViewer init')
+            main_layout = QVBoxLayout()
+            self.lbl = QLabel()
+            canvas = QPixmap(400, 300)
+            canvas.fill(Qt.white)
+            self.lbl.setPixmap(canvas)
+            main_layout.addWidget(self.lbl)
+            self.setLayout(main_layout)
+            self.text = "Hello, I am Morpheus!"
     
+        def paintEvent(self, event):
+            print('LogViewer paintEvent')
+            painter = QPainter(self)
+            painter.setPen(QColor(255, 255, 255))
+            font = QFont()
+            font.setPointSize(20)
+            painter.setFont(font)
+            text_rect = QRect(10, 10, 380, 180)
+            painter.drawText(text_rect, Qt.AlignCenter, "Hello, I am Morpheus!")
+            painter.end()
+
+            # pen = QPen(QColor("red"))
+            # pen.setWidth(3)
+            # self.line = self.scene.addLine(10, 10, 10, 100, pen)
+    
+            # Calculate text rectangle to center text
+            text_rect = QRect(0, 0, self.width(), self.height())
+            painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, self.text)
+
+
+class LogViewer(QGraphicsView):
+    def __init__(self):
+        super().__init__()
+        self.pos = 10
+        self.text = "Hello, I am Morpheus!"
+        self.scene = QGraphicsScene(self)
+        self.setScene(self.scene)
+
+        # Create a line
+        pen = QPen(QColor("red"))
+        pen.setWidth(3)
+        self.line = self.scene.addLine(10, 10, 10, 100, pen)
+        text_item = QGraphicsTextItem(self.text)
+        self.scene.addItem(text_item)
+
+    def update_text(self, text):
+        self.text = text
+        print('Text: ', self.text)
+        pen = QPen(QColor("red"))
+        pen.setWidth(3)
+        self.line = self.scene.addLine(self.pos, 60, 70, 100, pen)
+        text_item = QGraphicsTextItem(self.text)
+        self.scene.addItem(text_item)
+        self.update()
+        self.pos += 5
     
 
 class YesNoBox(QGroupBox):
@@ -64,6 +129,7 @@ class YesNoBox(QGroupBox):
         btn_layout.addWidget(btn_yes)
         btn_layout.addWidget(btn_no)
         layout.addLayout(btn_layout)
+        
         
         layout.addStretch()
         self.setLayout(layout)
