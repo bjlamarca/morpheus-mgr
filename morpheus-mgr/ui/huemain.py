@@ -93,8 +93,8 @@ class GeneralTab(QWidget):
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
         self.log_viewer.update_text('Syncing Device Types')
-        self.log_viewer.repaint()
-        self.log_viewer.update()
+        #self.log_viewer.repaint()
+        #self.log_viewer.update()
         #responce = hue_bridge.sync_device_types(self.log_msg)
 
     def sync_bridge(self):
@@ -107,9 +107,9 @@ class GeneralTab(QWidget):
            
     def updates_msg(self, sender, msg_dict):
         print('Signal received', sender, msg_dict)
-        self.log_viewer.update_text('Syncing Device Types')
-        self.log_viewer.repaint()
-        self.log_viewer.update()
+        self.log_viewer.update_log(msg_dict)
+        #self.log_viewer.repaint()
+        #self.log_viewer.update()
   
 
         
@@ -124,10 +124,7 @@ class DeviceTab(QWidget):
         self.device_table.setMinimumWidth(450)
         device_tbl_layout.addWidget(self.device_table)
         device_tbl_layout.addStretch()                
-
-
-
-      
+ 
     def showEvent(self, event):
         self.fill_device_table()
         

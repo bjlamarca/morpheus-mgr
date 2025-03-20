@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QFrame,
-                             QGroupBox, QGraphicsView, QGraphicsScene, QGraphicsTextItem)
+                             QGroupBox, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QTableWidget, QTableWidgetItem)
 from PySide6.QtGui import Qt, QPainter, QColor, QBrush, QFont, QPixmap, QPen
 from PySide6.QtCore import QRect
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -54,64 +54,64 @@ class LogMsgBox(QFrame):
         print('LogMsgBox: ', msg)
         self.txt_edit.setText(str(msg))
 
-class Paint(QWidget):
-        def __init__(self):
-            super().__init__()
-            print('LogViewer init')
-            main_layout = QVBoxLayout()
-            self.lbl = QLabel()
-            canvas = QPixmap(400, 300)
-            canvas.fill(Qt.white)
-            self.lbl.setPixmap(canvas)
-            main_layout.addWidget(self.lbl)
-            self.setLayout(main_layout)
-            self.text = "Hello, I am Morpheus!"
-    
-        def paintEvent(self, event):
-            print('LogViewer paintEvent')
-            painter = QPainter(self)
-            painter.setPen(QColor(255, 255, 255))
-            font = QFont()
-            font.setPointSize(20)
-            painter.setFont(font)
-            text_rect = QRect(10, 10, 380, 180)
-            painter.drawText(text_rect, Qt.AlignCenter, "Hello, I am Morpheus!")
-            painter.end()
-
-            # pen = QPen(QColor("red"))
-            # pen.setWidth(3)
-            # self.line = self.scene.addLine(10, 10, 10, 100, pen)
-    
-            # Calculate text rectangle to center text
-            text_rect = QRect(0, 0, self.width(), self.height())
-            painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, self.text)
 
 
-class LogViewer(QGraphicsView):
+class LogViewer(QWidget):
     def __init__(self):
         super().__init__()
-        self.pos = 10
+        self.log = []
+        self.setMinimumHeight(200)
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+
+        log_tbl_layout = QHBoxLayout()
+        self.log_tbl = QTableWidget()
+        self.log_tbl.setMinimumWidth(200)
+        self.log_tbl.setMinimumHeight(400)
+        log_tbl_layout.addWidget(self.log_tbl)
+        log_tbl_layout.addStretch()
+        
+        self.layout.addLayout(log_tbl_layout)
+        
+
+
+    def update_log(self, msg_dict):
+        self.log.append(msg_dict.copy())
+        #print('log: ', self.log)
+    
+        self.log_tbl.clear()
+        self.log_tbl.setColumnCount(1)
+        self.log_tbl.setRowCount(len(self.log))
+        for index, logitem in enumerate(self.log):
+             self.log_tbl.setItem(index, 0, QTableWidgetItem(logitem['message']))
+            
+
+class LogViewerGraphics(QGraphicsView):
+    def __init__(self):
+        super().__init__()
+        self.pos = 20
         self.text = "Hello, I am Morpheus!"
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
 
         # Create a line
-        pen = QPen(QColor("red"))
-        pen.setWidth(3)
-        self.line = self.scene.addLine(10, 10, 10, 100, pen)
+        
         text_item = QGraphicsTextItem(self.text)
+        text_item.setPos(-10, 10)
         self.scene.addItem(text_item)
 
     def update_text(self, text):
         self.text = text
         print('Text: ', self.text)
-        pen = QPen(QColor("red"))
-        pen.setWidth(3)
-        self.line = self.scene.addLine(self.pos, 60, 70, 100, pen)
+        #pen = QPen(QColor("red"))
+        # pen.setWidth(3)
+        # self.line = self.scene.addLine(self.pos, 60, 70, 100, pen)
         text_item = QGraphicsTextItem(self.text)
+        text_item.setPos(-10, self.pos)
         self.scene.addItem(text_item)
+        
         self.update()
-        self.pos += 5
+        self.pos += 20
     
 
 class YesNoBox(QGroupBox):
