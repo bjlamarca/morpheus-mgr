@@ -56,7 +56,7 @@ class LogMsgBox(QFrame):
 
 
 
-class LogViewer(QWidget):
+class LogViewer(QFrame):
     def __init__(self):
         super().__init__()
         self.log = []
@@ -71,19 +71,43 @@ class LogViewer(QWidget):
         log_tbl_layout.addWidget(self.log_tbl)
         log_tbl_layout.addStretch()
         
-        self.layout.addLayout(log_tbl_layout)
-        
+        btn_layout = QHBoxLayout()
+        btn_close = QPushButton('Close')
+        btn_close.clicked.connect(self.hide)
+        btn_layout.addWidget(btn_close)
+        btn_layout.addStretch()
 
+        self.layout.addLayout(log_tbl_layout)
+        self.layout.addLayout(btn_layout)
 
     def update_log(self, msg_dict):
-        self.log.append(msg_dict.copy())
-        #print('log: ', self.log)
-    
-        self.log_tbl.clear()
-        self.log_tbl.setColumnCount(1)
-        self.log_tbl.setRowCount(len(self.log))
-        for index, logitem in enumerate(self.log):
-             self.log_tbl.setItem(index, 0, QTableWidgetItem(logitem['message']))
+        if msg_dict['status'] == 'clear':
+            self.log = []
+            self.log_tbl.clear()
+            self.show()
+        else:
+            self.log.append(msg_dict.copy())
+            #print('log: ', self.log)
+        
+            self.log_tbl.clear()
+            self.log_tbl.verticalHeader().setVisible(False)
+            self.log_tbl.horizontalHeader().setVisible(False)
+            self.log_tbl.setColumnCount(1)
+            self.log_tbl.setColumnWidth(0, 350)
+            self.log_tbl.setRowCount(len(self.log))
+            for index, logitem in enumerate(self.log):
+                if logitem['status'] == 'error':
+                    row_color = QColor('red')
+                elif logitem['status'] == 'info':
+                    row_color = QColor('aqua')
+                elif logitem['status'] == 'success':
+                    row_color = QColor('lawngreen')
+                else:
+                    row_color = QColor('white')
+                    
+                tbl_item = QTableWidgetItem(logitem['message'])
+                tbl_item.setForeground(row_color)
+                self.log_tbl.setItem(index, 0, tbl_item)
             
 
 class LogViewerGraphics(QGraphicsView):

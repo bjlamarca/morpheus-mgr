@@ -1,6 +1,7 @@
 import sys
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QMenu, QGroupBox, QPushButton, QMdiArea
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+                            QHBoxLayout, QMenu, QGroupBox, QPushButton, QMdiArea, QTabWidget)
 from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtCore import Qt
 
@@ -16,13 +17,12 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Morpheus")
-        self.win_handler = WindowHandler()
         menu_bar = self.menuBar()
         
         win_menu = QMenu("Window", self)
 
         hue_action = QAction("Hue", self)
-        hue_action.triggered.connect(lambda: self.call_window("huewin"))
+        hue_action.triggered.connect(lambda: self.add_tab("huewin"))
         win_menu.addAction(hue_action)
         menu_bar.addMenu(win_menu)
 
@@ -31,41 +31,37 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
 
+        tab_layout = QHBoxLayout()
+        self.tab_widget = QTabWidget()
+        self.tab_widget.setTabsClosable(True)
+        self.tab_widget.tabCloseRequested.connect(self.close_tab)
+        self.tab_widget.setMovable(True)
+        tab_layout.addWidget(self.tab_widget)
+        tab_layout.addStretch()
+
+        main_layout.addLayout(tab_layout)
+
     
         main_layout.addStretch()
+    
+    def close_tab(self, index):
+        self.tab_widget.removeTab(index)
 
     def closeEvent(self, event: QCloseEvent):
-        #ThreadTracker().stop_all_threads()
-        self.win_handler.close_all_windows()
         event.accept
 
-    def call_window(self, name):
-        self.win_handler.show_window(name)
+    def add_tab(self, name):
+        if name == "huewin":
+            hue_win = HueMainWindow()
+            self.tab_widget.addTab(hue_win, "Hue")
+            self.tab_widget.setCurrentWidget(hue_win)
+
 
     def connect_websocket(self):
         webs_test()
 
 
-class MainWindowMDI(QMainWindow):
-    def __init__(self):
-        super().__init__()
 
-        self.mdi_area = QMdiArea()
-        self.mdi_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.mdi_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.setCentralWidget(self.mdi_area)
-
-        #self.mdi_area.subWindowActivated.connect(self.update_menus)
-
-        #self.create_actions()
-        self.create_menus()
-        #self.create_tool_bars()
-        #self.create_status_bar()
-        #self.update_menus()
-
-        #self.read_settings()
-
-        self.setWindowTitle("Morpheus Manager")
 
     def create_menus(self):
         menu_bar = self.menuBar()

@@ -15,14 +15,14 @@ class Signal():
 
     def connect(cls, group, handler):
         cls.handlers.append([group, handler])
-        print('Signal connected', cls.handlers)
+        #print('Signal connected', cls.handlers)
 
     def disconnect(cls, handler):
         cls.handlers.remove(handler)
-        print('Signal disconnected')
+        #print('Signal disconnected')
 
     def send(cls, group, sender, data_dict):
-        print('Signal sent', group, sender, data_dict)
+        #print('Signal sent', group, sender, data_dict)
         for handler in cls.handlers:
             if handler[0] == group:
                 handler[1](sender,  data_dict)

@@ -30,6 +30,7 @@ class HueMainWindow(QMainWindow):
         self.tab_widget.addTab(general_tab_widget, "General")
         self.tab_widget.addTab(bridge_tab_widget, "Bridges")
         self.layout.addWidget(self.tab_widget)
+        self.layout.addStretch()
 
 class GeneralTab(QWidget):
     def __init__(self):
@@ -75,7 +76,7 @@ class GeneralTab(QWidget):
         self.tab_general_layout.addWidget(self.log_viewer)
         self.tab_general_layout.addStretch()
         
-        self.log_viewer.show()
+        self.log_viewer.hide()
         
 
         #self.log_msg.hide()
@@ -92,27 +93,18 @@ class GeneralTab(QWidget):
 
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
-        self.log_viewer.update_text('Syncing Device Types')
-        #self.log_viewer.repaint()
-        #self.log_viewer.update()
-        #responce = hue_bridge.sync_device_types(self.log_msg)
+        responce = hue_bridge.sync_device_types('hue_mgr')
 
     def sync_bridge(self):
         bridge_id = self.bridge_combo.currentData()
-        print(bridge_id)
         if bridge_id > 0:            
             hue_bridge = HueBridgeUtils()
             responce = hue_bridge.sync_bridge(bridge_id, 'hue_mgr')
 
            
     def updates_msg(self, sender, msg_dict):
-        print('Signal received', sender, msg_dict)
         self.log_viewer.update_log(msg_dict)
-        #self.log_viewer.repaint()
-        #self.log_viewer.update()
-  
-
-        
+                
 class DeviceTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -190,6 +182,7 @@ class BridgeTab(QWidget):
         self.tab_bridge_layout.addLayout(bridge_btn_layout)
         self.tab_bridge_layout.addLayout(bridge_msgbox_layout)
         self.tab_bridge_layout.addLayout(bridge_tbl_layout)
+        self.tab_bridge_layout.addStretch()
 
         self.bridge_msgbox.hide()
 
