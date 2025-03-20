@@ -1,5 +1,4 @@
-import sys
-import threading, asyncio
+
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel,
                                QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
                                QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout)
@@ -25,12 +24,47 @@ class HueMainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         self.tab_manuf = QWidget()
         
+        device_tab_widget = DeviceTab()
         general_tab_widget = GeneralTab()
         bridge_tab_widget = BridgeTab()
+
+        self.tab_widget.addTab(device_tab_widget, "Devices")
         self.tab_widget.addTab(general_tab_widget, "General")
         self.tab_widget.addTab(bridge_tab_widget, "Bridges")
         self.layout.addWidget(self.tab_widget)
         self.layout.addStretch()
+
+class DeviceTab(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.tab_device_layout = QVBoxLayout()
+        self.setLayout(self.tab_device_layout)
+        
+        device_tbl_layout = QHBoxLayout()
+        self.device_table = QTableWidget()
+        self.device_table.setMinimumWidth(450)
+        device_tbl_layout.addWidget(self.device_table)
+        device_tbl_layout.addStretch()                
+ 
+        self.tab_device_layout.addLayout(device_tbl_layout)
+    
+    def showEvent(self, event):
+        self.fill_device_table()
+        
+    def fill_device_table(self):
+        self.device_table.clear()
+        self.device_table.setColumnCount(4)
+        self.device_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.device_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.device_table.setHorizontalHeaderLabels(['Name', 'Device Type', 'Online', 'ID'])
+        self.device_table.setColumnWidth(0, 150)
+        self.device_table.setColumnWidth(1, 150)
+        device_qs = HueDevice.select()
+        self.device_table.setRowCount(device_qs.count())
+        for index, device in enumerate(device_qs):
+            self.device_table.setItem(index, 0, QTableWidgetItem(device.name))
+            self.device_table.setItem(index, 1, QTableWidgetItem(device.device_type.display_name))
+            self.device_table.setItem(index, 2, QTableWidgetItem(str(device.online)))
 
 class GeneralTab(QWidget):
     def __init__(self):
@@ -41,39 +75,39 @@ class GeneralTab(QWidget):
         horz_layout = QHBoxLayout()
 
         btn_grpbox = QGroupBox()
+        bridge_Vlayout = QVBoxLayout()
+        
         btn_layout = QHBoxLayout()
         btn_sync_device_types = QPushButton('Sync Device Types')
         btn_sync_device_types.clicked.connect(self.sync_device_types)
         btn_layout.addWidget(btn_sync_device_types)
-        btn_layout.addStretch()
-        btn_grpbox.setLayout(btn_layout)
-
-        bridge_grpbox = QGroupBox()
-        bridge_Vlayout = QVBoxLayout()
+        
         combo_layout = QHBoxLayout()
         self.bridge_combo = QComboBox()
-        
         combo_layout.addWidget(self.bridge_combo)
-        combo_layout.addStretch()
-
+        
+        sync_bridge_layout = QHBoxLayout()  
         btn_sync_bridge = QPushButton('Sync Bridge')
         btn_sync_bridge.clicked.connect(self.sync_bridge)
-
+        sync_bridge_layout.addWidget(btn_sync_bridge)
+        
+        bridge_Vlayout.addLayout(btn_layout)
         bridge_Vlayout.addLayout(combo_layout)
-        bridge_Vlayout.addWidget(btn_sync_bridge)
+        bridge_Vlayout.addLayout(sync_bridge_layout)
         
-        bridge_grpbox.setLayout(bridge_Vlayout)
-
-        self.log_viewer = LogViewer()
-        self.log_viewer.resize(400, 200)
-                
-        
+        btn_grpbox.setLayout(bridge_Vlayout)
         horz_layout.addWidget(btn_grpbox)
-        horz_layout.addWidget(bridge_grpbox)
         horz_layout.addStretch()
+        self.tab_general_layout.addLayout(horz_layout)
+
+        log_layout = QHBoxLayout()
+        self.log_viewer = LogViewer()
+        log_layout.addWidget(self.log_viewer)
+        log_layout.addStretch()
+        
 
         self.tab_general_layout.addLayout(horz_layout)
-        self.tab_general_layout.addWidget(self.log_viewer)
+        self.tab_general_layout.addLayout(log_layout)
         self.tab_general_layout.addStretch()
         
         self.log_viewer.hide()
@@ -82,6 +116,9 @@ class GeneralTab(QWidget):
         #self.log_msg.hide()
         self.fill_bridge_combo()
         signal.connect('hue_mgr', self.updates_msg)
+
+    def showEvent(self, event):
+        self.fill_bridge_combo()
 
     def fill_bridge_combo(self):
         self.bridge_combo.clear()
@@ -105,37 +142,7 @@ class GeneralTab(QWidget):
     def updates_msg(self, sender, msg_dict):
         self.log_viewer.update_log(msg_dict)
                 
-class DeviceTab(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.tab_device_layout = QVBoxLayout()
-        self.setLayout(self.tab_device_layout)
-        
-        device_tbl_layout = QHBoxLayout()
-        self.device_table = QTableWidget()
-        self.device_table.setMinimumWidth(450)
-        device_tbl_layout.addWidget(self.device_table)
-        device_tbl_layout.addStretch()                
- 
-    def showEvent(self, event):
-        self.fill_device_table()
-        
-    
-    def init_tab_general(self):
-        self.tab_general = QWidget()
-        self.tab_general_layout = QVBoxLayout(self.tab_general)
-        self.tab_general.setLayout(self.tab_general_layout)
-        self.tab_general.addTab(self.tab_general, "General")
 
-    def fill_device_table(self):
-        self.device_table.clear()
-        self.device_table.setColumnCount(4)
-        self.device_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.device_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.device_table.setHorizontalHeaderLabels(['Name', 'IP Address', 'Username', 'ID'])
-        device_qs = HueDevice.select()
-        for device in device_qs:
-            pass
 
 class BridgeTab(QWidget):
     def __init__(self):

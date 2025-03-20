@@ -6,9 +6,10 @@ from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtCore import Qt
 
 from ui.huemain import HueMainWindow
+from ui.settingsui import SettingsMainWindow
 
 from ui.utilities import WindowHandler
-from system.ultilities import load_stylesheet
+from system.ultilities import load_stylesheet, get_icon_obj
 from system.websocket import webs_test
 
 
@@ -17,32 +18,34 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Morpheus")
+        self.setWindowIcon(get_icon_obj("morpheus-48"))
         menu_bar = self.menuBar()
         
-        win_menu = QMenu("Window", self)
-
+        system_menu = QMenu("System", self)
+        settings_action = QAction("Settings", self)
+        settings_action.triggered.connect(lambda: self.add_tab("settings"))
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.close)
+        system_menu.addAction(settings_action)
+        system_menu.addAction(exit_action)
+        
+        interface_menu = QMenu("Interfaces", self)
         hue_action = QAction("Hue", self)
         hue_action.triggered.connect(lambda: self.add_tab("huewin"))
-        win_menu.addAction(hue_action)
-        menu_bar.addMenu(win_menu)
-
-        #Main Widget and Layout
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        main_layout = QVBoxLayout(main_widget)
-
-        tab_layout = QHBoxLayout()
+        interface_menu.addAction(hue_action)
+        
+        menu_bar.addMenu(system_menu)
+        menu_bar.addMenu(interface_menu)
+        
         self.tab_widget = QTabWidget()
         self.tab_widget.setTabsClosable(True)
         self.tab_widget.tabCloseRequested.connect(self.close_tab)
         self.tab_widget.setMovable(True)
-        tab_layout.addWidget(self.tab_widget)
-        tab_layout.addStretch()
 
-        main_layout.addLayout(tab_layout)
+        self.setCentralWidget(self.tab_widget)
 
-    
-        main_layout.addStretch()
+        self.add_tab("huewin")
+        
     
     def close_tab(self, index):
         self.tab_widget.removeTab(index)
@@ -51,6 +54,10 @@ class MainWindow(QMainWindow):
         event.accept
 
     def add_tab(self, name):
+        if name == "settings":
+            settings_win = SettingsMainWindow()
+            self.tab_widget.addTab(settings_win, "Settings")
+            self.tab_widget.setCurrentWidget(settings_win)
         if name == "huewin":
             hue_win = HueMainWindow()
             self.tab_widget.addTab(hue_win, "Hue")

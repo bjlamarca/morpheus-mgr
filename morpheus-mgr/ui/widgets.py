@@ -64,9 +64,10 @@ class LogViewer(QFrame):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
+
         log_tbl_layout = QHBoxLayout()
         self.log_tbl = QTableWidget()
-        self.log_tbl.setMinimumWidth(200)
+        #self.log_tbl.setMinimumWidth(200)
         self.log_tbl.setMinimumHeight(400)
         log_tbl_layout.addWidget(self.log_tbl)
         log_tbl_layout.addStretch()
@@ -79,6 +80,7 @@ class LogViewer(QFrame):
 
         self.layout.addLayout(log_tbl_layout)
         self.layout.addLayout(btn_layout)
+        self.layout.addStretch()
 
     def update_log(self, msg_dict):
         if msg_dict['status'] == 'clear':
