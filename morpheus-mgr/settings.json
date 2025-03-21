@@ -1,0 +1,17 @@
+{
+
+    "server_connect_list": [
+        {
+            "name": "Local",
+            "url": "127.0.0.1",
+            "server": true,
+            "database": true
+        },
+        {
+            "name": "PC",
+            "url": "127.0.0.1",
+            "server": false,
+            "database": false
+        }
+    ]
+}

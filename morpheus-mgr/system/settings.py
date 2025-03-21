@@ -20,10 +20,21 @@ def webs_test():
     asyncio.run(send())
 
 
-class Server:
+class ServerConnection:
     def __init__(self):
         pass
 
     def get_server_list(self):
-        f = open(BASE_DIR + 'servers.json', 'r')
-        servers = json.load(f)
+        f = open(BASE_DIR + 'settings.json', 'r')
+        settings = json.load(f)
+        server_list = settings['server_connect_list']
+        return server_list
+    
+    def set_server_settings(self, server_list):
+        f = open('settings.json', 'r')
+        settings = json.load(f)
+        f.close()
+        settings['server_connect_list'] = server_list
+        f = open('settings.json', 'w')
+        f.write(json.dumps(settings))
+        f.close()

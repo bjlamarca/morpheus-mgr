@@ -13,6 +13,7 @@ from ui.widgets import YesNoBox, LogViewer
 from system.signals import Signal
 
 
+
 class HueMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()

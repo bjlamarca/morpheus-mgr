@@ -10,8 +10,6 @@ from ui.settingsui import SettingsMainWindow
 
 from ui.utilities import WindowHandler
 from system.ultilities import load_stylesheet, get_icon_obj
-from system.websocket import webs_test
-
 
 
 class MainWindow(QMainWindow):
@@ -45,6 +43,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         self.add_tab("huewin")
+        self.add_tab("settings")
         
     
     def close_tab(self, index):
@@ -55,6 +54,7 @@ class MainWindow(QMainWindow):
 
     def add_tab(self, name):
         if name == "settings":
+            print("Settings")
             settings_win = SettingsMainWindow()
             self.tab_widget.addTab(settings_win, "Settings")
             self.tab_widget.setCurrentWidget(settings_win)
@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
 
 
     def connect_websocket(self):
-        webs_test()
+        pass
 
 
 
