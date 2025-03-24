@@ -1,17 +1,20 @@
 {
 
-    "server_connect_list": [
+    "server_list": [
         {
             "name": "Local",
             "url": "127.0.0.1",
-            "server": true,
-            "database": true
+            "id": 1
+            
         },
         {
             "name": "PC",
             "url": "127.0.0.1",
-            "server": false,
-            "database": false
+            "id": 2
+
+            
         }
-    ]
+    ],
+    "server_current_id": 1,
+    "server_current_database_id": 1
 }
