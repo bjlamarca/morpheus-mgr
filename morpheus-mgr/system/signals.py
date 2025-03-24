@@ -2,7 +2,6 @@ class Signal():
     _instance = None
     
     def __new__(cls):
-        print('Signal new: ', cls._instance)
         if cls._instance is None:
             cls.handlers = []
             cls._instance = super().__new__(cls)
@@ -10,8 +9,8 @@ class Signal():
         return cls._instance
     
     def __init__(cls):
-        
-        print('Signal created', cls.handlers)
+        pass
+        #print('Signal created', cls.handlers)
 
     def connect(cls, group, handler):
         cls.handlers.append([group, handler])

@@ -54,7 +54,6 @@ class MainWindow(QMainWindow):
 
     def add_tab(self, name):
         if name == "settings":
-            print("Settings")
             settings_win = SettingsMainWindow()
             self.tab_widget.addTab(settings_win, "Settings")
             self.tab_widget.setCurrentWidget(settings_win)

@@ -31,8 +31,16 @@ class ServersTab(QWidget):
         self.tab_server_layout = QVBoxLayout()
         self.setLayout(self.tab_server_layout)
         
-        server_layout = QVBoxLayout()
-
+        server_layout = QHBoxLayout()
+        server_Vlayout = QVBoxLayout()
+        self.server_combo = QComboBox()
+        self.server_combo.currentIndexChanged.connect(self.server_changed)
+        server_Vlayout.addWidget(self.server_combo)
+        self.server_db_combo = QComboBox()
+        self.server_db_combo.currentIndexChanged.connect(self.server_db_changed)
+        server_Vlayout.addWidget(self.server_db_combo)
+        server_layout.addLayout(server_Vlayout)
+        server_layout.addStretch()
 
         list_btn_layout = QHBoxLayout()
         btn_add_server = QPushButton('Add server')
@@ -70,52 +78,59 @@ class ServersTab(QWidget):
         msg_layout.addWidget(self.msg_label)
         msg_layout.addStretch()
         
-        self.tab_server_layout.addLayout(server_btn_layout)
+        self.tab_server_layout.addLayout(server_layout)
+        self.tab_server_layout.addLayout(list_btn_layout)
         self.tab_server_layout.addLayout(server_msgbox_layout)
         self.tab_server_layout.addLayout(server_tbl_layout)
         self.tab_server_layout.addStretch()
 
         self.server_msgbox.hide()
         
+
     def showEvent(self, event):
         self.fill_server_table()
+        self.fill_server_combos()
+
+    def fill_server_combos(self):
+        server_mgr = ServerManger()
+        self.server_combo.clear()
+        self.server_db_combo.clear()
+        server_list = server_mgr.get_server_list()
+        for server in server_list:
+            self.server_combo.addItem(server['name'], server['id'])
+            self.server_db_combo.addItem(server['name'], server['id'])
+        self.server_combo.setCurrentIndex(self.server_combo.findData(server_mgr.get_current_server()['id']))
+        self.server_db_combo.setCurrentIndex(self.server_db_combo.findData(server_mgr.get_current_db_server()['id']))
+
         
    
+
     def fill_server_table(self):
         self.server_table.clear()
-        self.server_table.setColumnCount(4)
+        self.server_table.setColumnCount(3)
         self.server_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.server_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.server_table.setHorizontalHeaderLabels(['Name', 'IP Address'])
+        self.server_table.setHorizontalHeaderLabels(['Name', 'IP Address', 'ID'])
         #self.server_table.horizontalHeader().setStretchLastSection(True)
-        server_conn = ServerConnection()
+        server_conn = ServerManger()
         server_list = server_conn.get_server_list()
         self.server_table.setRowCount(len(server_list))
         for index, server in enumerate(server_list):
             self.server_table.setItem(index, 0, QTableWidgetItem(server['name']))
             self.server_table.setItem(index, 1, QTableWidgetItem(server['ip_addr']))
-            chk_server = QCheckBox()
-            chk_db = QCheckBox()
-            chk_server.stateChanged.connect(lambda state, index=index: self.server_chk_changed(state, index))
-            chk_db.stateChanged.connect(lambda state, index=index: self.db_chk_changed(state, index))
+            self.server_table.setItem(index, 2, QTableWidgetItem(str(server['id'])))
             
-            if server['server'] == True:
-                chk_server.setChecked(True)
-            else:
-                chk_server.setChecked(False)
-            if server['database'] == True:
-                chk_db.setChecked(True)
-            else:
-                chk_db.setChecked(False)
-            self.server_table.setCellWidget(index, 2, chk_server)
-            self.server_table.setCellWidget(index, 3, chk_db)
-            self.server_table.setItem(index, 3, QTableWidgetItem(str(server['id'])))
-            
-                        
-    def server_chk_changed(self, state, index):
+    def server_changed(self, state, index):
+        reply = QMessageBox.question(None, "Question", "Are you sure?", 
+                             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
+                             QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            print("Answer: Yes")
+        else:
+            print("Answer: No")
         print('State:', state, 'Index:', index)
 
-    def db_chk_changed(self, state, index):
+    def server_db_changed(self, state, index):
         print('State:', state, 'Index:', index)
 
     def add_server(self):
@@ -126,7 +141,7 @@ class ServersTab(QWidget):
     def edit_server(self):
         curr_row = self.server_table.currentRow()   
         if curr_row != -1:
-            server_id = int(self.server_table.item(curr_row, 4).text())
+            server_id = int(self.server_table.item(curr_row, 2).text())
             dlg_edit_server = ServerAddEdit(self, dlg_type='edit', server_id=server_id)
             dlg_edit_server.resize(400, 200)
             dlg_edit_server.show()
@@ -135,26 +150,26 @@ class ServersTab(QWidget):
         curr_row = self.server_table.currentRow()
         if  curr_row != -1:
             if caller == False:
-                server_id = int(self.server_table.item(self.server_table.currentRow(), 4).text())
+                server_id = int(self.server_table.item(self.server_table.currentRow(), 2).text())
                 self.server_msgbox.set_msg('Are you sure you want to delete this server?')
                 self.server_msgbox.set_return_func(self.del_server, server_id)
                 self.server_msgbox.show()
                 
         if caller == 'yes':
             server_id = value
-        #     hue_util = HueUtilities()
-        #     result = hue_util.delete_server(server_id)
-        #     if result['status'] == 'success':
-        #         self.msg_label.setText(result['message'])
-        #         self.server_msgbox.hide()
-        #         self.fill_server_table()
-        #     elif result['status'] == 'error':
-        #         self.msg_label.setText(result['message'])
-        #         self.msg_label.setStyleSheet('color: red')
-        #         self.server_msgbox.hide()
+            server_mgr = ServerManger()
+            result = server_mgr.delete_server(server_id)
+            if result['status'] == 'success':
+                self.msg_label.setText(result['message'])
+                self.server_msgbox.hide()
+                self.fill_server_table()
+            elif result['status'] == 'error':
+                self.msg_label.setText(result['message'])
+                self.msg_label.setStyleSheet('color: red')
+                self.server_msgbox.hide()
                 
-        # elif caller == 'no':
-        #     self.server_msgbox.hide()
+        elif caller == 'no':
+            self.server_msgbox.hide()
        
 class ServerAddEdit(QDialog):
     def __init__(self, parent=None, dlg_type=None, server_id=None):
@@ -200,17 +215,13 @@ class ServerAddEdit(QDialog):
 
         if self.dlg_type == 'edit':
             ser_conn = ServerManger()
-            server = ser_conn.get_server(self.server_id)
+            server = ser_conn.get_server_info(self.server_id)
             self.ledit_name.setText(server['name'])
             self.ledit_ipaddr.setText(server['ip_addr'])
            
-            
-
-        
-        
     def add_server(self):
         serv_conn = ServerManger()
-        responce = serv_conn.add_server(self.ledit_name.text(), self.ledit_name.text(),)
+        responce = serv_conn.add_server(self.ledit_name.text(), self.ledit_ipaddr.text(),)
         if responce['status'] == 'success':
             self.parent().fill_server_table()
             self.close()
@@ -221,7 +232,7 @@ class ServerAddEdit(QDialog):
 
     def edit_server(self):
         serv_conn = ServerManger()
-        responce = serv_conn.edit_server(self.server_id, self.name.text(), self.ip_addr.text(), self.username.text(), self.key.text())
+        responce = serv_conn.edit_server(self.ledit_name.text(), self.ledit_ipaddr.text(), self.server_id)
         if responce['status'] == 'success':
             self.parent().fill_server_table()
             self.close()
