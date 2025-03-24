@@ -1,19 +1,19 @@
 {
 
-    "server_connect_list": [
+    "server_list": [
         {
             "name": "Local",
-            "ip_addr": "127.0.0.1",
+            "url": "127.0.0.1",
             "server": true,
-            "database": false, 
-            "id": 1
+            "database": true
         },
         {
             "name": "PC",
-            "ip_addr": "192.168.55.235",
+            "url": "127.0.0.1",
             "server": false,
-            "database": true,
-            "id": 2
+            "database": false
         }
-    ]
+    ],
+    "server_current_id": 1,
+    "server_current_database_id": 1
 }

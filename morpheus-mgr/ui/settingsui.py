@@ -31,7 +31,10 @@ class ServersTab(QWidget):
         self.tab_server_layout = QVBoxLayout()
         self.setLayout(self.tab_server_layout)
         
-        server_btn_layout = QHBoxLayout()
+        server_layout = QVBoxLayout()
+
+
+        list_btn_layout = QHBoxLayout()
         btn_add_server = QPushButton('Add server')
         btn_add_server.clicked.connect(self.add_server)
         btn_add_server.setIcon(get_icon_obj('plus-circle'))
@@ -41,10 +44,10 @@ class ServersTab(QWidget):
         btn_del_server = QPushButton('Delete server')
         btn_del_server.clicked.connect(self.del_server)
         btn_del_server.setIcon(get_icon_obj('cross-circle'))
-        server_btn_layout.addWidget(btn_add_server)
-        server_btn_layout.addWidget(btn_edit_server)
-        server_btn_layout.addWidget(btn_del_server)
-        server_btn_layout.addStretch()
+        list_btn_layout.addWidget(btn_add_server)
+        list_btn_layout.addWidget(btn_edit_server)
+        list_btn_layout.addWidget(btn_del_server)
+        list_btn_layout.addStretch()
         
         server_msgbox_layout = QHBoxLayout()
         self.server_msgbox = YesNoBox()
@@ -83,7 +86,7 @@ class ServersTab(QWidget):
         self.server_table.setColumnCount(4)
         self.server_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.server_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.server_table.setHorizontalHeaderLabels(['Name', 'IP Address', 'Server','Database', 'ID'])
+        self.server_table.setHorizontalHeaderLabels(['Name', 'IP Address'])
         #self.server_table.horizontalHeader().setStretchLastSection(True)
         server_conn = ServerConnection()
         server_list = server_conn.get_server_list()
