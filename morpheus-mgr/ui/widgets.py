@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QFrame,
-                             QGroupBox, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QTableWidget, QTableWidgetItem)
+                             QGroupBox, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QTableWidget, 
+                             QTableWidgetItem, QCheckBox)
 from PySide6.QtGui import Qt, QPainter, QColor, QBrush, QFont, QPixmap, QPen
 from PySide6.QtCore import QRect
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -186,4 +187,4 @@ class CircleIndicatorWidget(QWidget):
         painter.drawEllipse(self.width()/2 - diameter/2, self.height()/2 - diameter/2, diameter, diameter)
 
 
-        
+
