@@ -3,7 +3,9 @@ from peewee import *
 from system.models import DeviceType
 from system.server import ServerManger
 
-db = ServerManger().db
+server_manager = ServerManger()
+db = server_manager.db
+
 
 class BaseModel(Model):
     class Meta:

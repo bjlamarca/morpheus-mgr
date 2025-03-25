@@ -42,8 +42,8 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        self.add_tab("huewin")
-        self.add_tab("settings")
+        #self.add_tab("huewin")
+        #self.add_tab("settings")
         
     
     def close_tab(self, index):

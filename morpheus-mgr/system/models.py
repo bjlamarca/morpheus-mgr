@@ -1,7 +1,10 @@
 from peewee import *
 from system.server import ServerManger
 
-db = ServerManger().db
+server_manager = ServerManger()
+db = server_manager.db
+
+print('db:', db)
 
 class BaseModel(Model):
     class Meta:

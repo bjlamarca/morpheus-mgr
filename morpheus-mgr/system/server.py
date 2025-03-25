@@ -43,6 +43,7 @@ class ServerManger:
         cls.db_port = 5432
         cls.db_user = 'morpheus'
         cls.db_password = 'Buster77!'
+        print('ServerManager init')
 
     def connect_db_server(cls, signal_grp=None):
         msg_dict = {}

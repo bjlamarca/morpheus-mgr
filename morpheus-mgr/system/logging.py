@@ -2,7 +2,7 @@ from pathlib import Path
 import json, datetime, os
 from datetime import datetime
 
-from system.models import SystemLog
+
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,6 +18,7 @@ LOG_LEVEL = (
     )
 
 class SystemLogger():
+    
     def __init__(self, module):
         self.logitem = {}
         self.logitem['module'] = module
@@ -27,6 +28,7 @@ class SystemLogger():
         self.logitem['level'] = ''
 
     def log(self, method, message, details, level):
+        from system.models import SystemLog
         self.logitem['method'] = method
         self.logitem['message'] = message
         self.logitem['details'] = details
