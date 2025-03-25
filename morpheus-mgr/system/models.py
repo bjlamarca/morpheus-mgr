@@ -1,6 +1,7 @@
 from peewee import *
+from system.server import ServerManger
 
-db = PostgresqlDatabase('morpheus2', host='192.168.55.235', port=5432, user='morpheus', password='Buster77!')
+db = ServerManger().db
 
 class BaseModel(Model):
     class Meta:

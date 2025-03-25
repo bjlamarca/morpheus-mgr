@@ -2,6 +2,7 @@ import json, traceback, ipaddress
 from pathlib import Path
 import asyncio
 from websockets.asyncio.client import connect
+from peewee import PostgresqlDatabase
 from system.logging import SystemLogger
 from system.signals import Signal
 
@@ -23,17 +24,55 @@ def webs_test():
     asyncio.run(send())
 
 
-class ServerManger:
-    def __init__(self):
-        pass
 
-    def get_server_list(self):
+
+class ServerManger:
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        
+        return cls._instance
+
+    def __init__(cls):
+        cls.db_connected = False
+        cls.db = None
+        cls.db_name = 'morpheus2'
+        cls.db_host = ''
+        cls.db_port = 5432
+        cls.db_user = 'morpheus'
+        cls.db_password = 'Buster77!'
+
+    def connect_db_server(cls, signal_grp=None):
+        msg_dict = {}
+        try:
+            db_serv_dict = cls.get_current_db_server()
+            cls.db_host = db_serv_dict['ip_addr']
+            cls.db = PostgresqlDatabase(cls.db_name, host=cls.db_host, port=cls.db_port, user=cls.db_user,
+                password=cls.db_password)
+        except Exception as e:
+            cls.db_connected = False
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error connecting to database server.'
+            logger.log('connect_db_server', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
+            if signal_grp:
+                Signal().send(signal_grp, cls, msg_dict)
+        else:
+            cls.db_connected = True
+            msg_dict['status'] = 'success'
+            msg_dict['message'] = 'Connected to database server.'
+            if signal_grp:
+                Signal().send(signal_grp, cls, msg_dict)
+            logger.log('connect_db_server', 'Connected to database server.', 'Database server: ' + cls.db_host, 'INFO')
+
+    def get_server_list(cls):
         f = open(BASE_DIR + '/settings.json', 'r')
         settings = json.load(f)
         server_list = settings['server_list']
         return server_list
     
-    def set_server_list(self, server_list):
+    def set_server_list(cls, server_list):
         f = open(BASE_DIR + '/settings.json', 'r')
         settings = json.load(f)
         f.close()
@@ -42,13 +81,13 @@ class ServerManger:
         f.write(json.dumps(settings, indent=4))
         f.close()
 
-    def get_server_info(self, server_id):
-        server_list = self.get_server_list()
+    def get_server_info(cls, server_id):
+        server_list = cls.get_server_list()
         for server in server_list:
             if server['id'] == server_id:
                 return server
 
-    def get_current_server(self):
+    def get_current_server(cls):
         f = open(BASE_DIR + '/settings.json', 'r')
         settings = json.load(f)
         current_server = settings['current_server_id']
@@ -57,7 +96,15 @@ class ServerManger:
             if server['id'] == current_server:
                 return server
             
-    def get_current_db_server(self):
+    def set_current_server(cls, server_id):
+        f = open(BASE_DIR + '/settings.json', 'r')
+        settings = json.load(f)
+        settings['current_server_id'] = server_id
+        f = open(BASE_DIR + '/settings.json', 'w')
+        f.write(json.dumps(settings, indent=4))
+        f.close()
+            
+    def get_current_db_server(cls):
         f = open(BASE_DIR + '/settings.json', 'r')
         settings = json.load(f)
         current_db_server = settings['current_db_server_id']
@@ -65,8 +112,16 @@ class ServerManger:
         for server in server_list:
             if server['id'] == current_db_server:
                 return server
+            
+    def set_current_server(cls, server_id): 
+        f = open(BASE_DIR + '/settings.json', 'r')
+        settings = json.load(f)
+        settings['current_server_id'] = server_id
+        f = open(BASE_DIR + '/settings.json', 'w')
+        f.write(json.dumps(settings, indent=4))
+        f.close()
 
-    def add_server(self, name, ip_addr):
+    def add_server(cls, name, ip_addr):
         msg_dict = {}
         try:
             if name == '' or ip_addr == '':
@@ -79,7 +134,7 @@ class ServerManger:
                 msg_dict['status'] = 'error'
                 msg_dict['message'] = 'Invalid IP Address.'
                 return msg_dict
-            server_list = self.get_server_list()
+            server_list = cls.get_server_list()
             id = 0
             for server in server_list:
                 if server['id'] > id:
@@ -90,7 +145,7 @@ class ServerManger:
                 'id': id + 1
             }
             server_list.append(server)
-            self.set_server_list(server_list)
+            cls.set_server_list(server_list)
             print('Server list:', server_list)
         except Exception as e:
                     traceback.print_exc()
@@ -105,7 +160,7 @@ class ServerManger:
             msg_dict['message'] = 'Server has been added successfully.'
             return msg_dict
 
-    def edit_server(self, name, ip_addr, server_id):
+    def edit_server(cls, name, ip_addr, server_id):
         msg_dict = {}
         try:
             if name == '' or ip_addr == '':
@@ -118,12 +173,12 @@ class ServerManger:
                 msg_dict['status'] = 'error'
                 msg_dict['message'] = 'Invalid IP Address.'
                 return msg_dict
-            server_list = self.get_server_list()
+            server_list = cls.get_server_list()
             for server in server_list:
                 if server['id'] == server_id:
                     server['name'] = name
                     server['ip_addr'] = ip_addr
-                    self.set_server_list(server_list)
+                    cls.set_server_list(server_list)
 
         except Exception as e:
                     traceback.print_exc()
@@ -138,14 +193,14 @@ class ServerManger:
             msg_dict['message'] = 'Server has been updated successfully.'
             return msg_dict
 
-    def delete_server(self, server_id):
+    def delete_server(cls, server_id):
         msg_dict = {}
         try:
-            server_list = self.get_server_list()
+            server_list = cls.get_server_list()
             for server in server_list:
                 if server['id'] == server_id:
                     server_list.remove(server)
-                    self.set_server_list(server_list)
+                    cls.set_server_list(server_list)
         except Exception as e:
                     traceback.print_exc()
                     logger.log('edit_server', 'Error deleting server.', str(e) + traceback.format_exc(), 'ERROR')
