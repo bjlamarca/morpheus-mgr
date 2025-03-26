@@ -27,6 +27,8 @@ class SettingsMainWindow(QMainWindow):
 
 class ServersTab(QWidget):
     def __init__(self):
+        self.current_server = None
+        self.current_db_server = None
         super().__init__()
         self.tab_server_layout = QVBoxLayout()
         self.setLayout(self.tab_server_layout)
@@ -34,11 +36,15 @@ class ServersTab(QWidget):
         server_layout = QHBoxLayout()
         server_Vlayout = QVBoxLayout()
         self.server_combo = QComboBox()
-        self.server_combo.currentIndexChanged.connect(self.server_changed)
-        server_Vlayout.addWidget(self.server_combo)
+        self.server_combo.activated.connect(self.server_changed)
         self.server_db_combo = QComboBox()
-        self.server_db_combo.currentIndexChanged.connect(self.server_db_changed)
-        server_Vlayout.addWidget(self.server_db_combo)
+        self.server_db_combo.activated.connect(self.server_db_changed)
+        
+        form_combo_layout = QFormLayout()
+        form_combo_layout.addRow("Server", self.server_combo)
+        form_combo_layout.addRow("Database Server", self.server_db_combo)
+        
+        server_Vlayout.addLayout(form_combo_layout)
         server_layout.addLayout(server_Vlayout)
         server_layout.addStretch()
 
@@ -82,6 +88,7 @@ class ServersTab(QWidget):
         self.tab_server_layout.addLayout(list_btn_layout)
         self.tab_server_layout.addLayout(server_msgbox_layout)
         self.tab_server_layout.addLayout(server_tbl_layout)
+        self.tab_server_layout.addLayout(msg_layout)
         self.tab_server_layout.addStretch()
 
         self.server_msgbox.hide()
@@ -99,12 +106,12 @@ class ServersTab(QWidget):
         for server in server_list:
             self.server_combo.addItem(server['name'], server['id'])
             self.server_db_combo.addItem(server['name'], server['id'])
-        self.server_combo.setCurrentIndex(self.server_combo.findData(server_mgr.get_current_server()['id']))
-        self.server_db_combo.setCurrentIndex(self.server_db_combo.findData(server_mgr.get_current_db_server()['id']))
+        self.current_server = server_mgr.get_current_server()
+        self.current_db_server = server_mgr.get_current_db_server()
+        self.server_combo.setCurrentIndex(self.server_combo.findData(self.current_server['id']))
+        self.server_db_combo.setCurrentIndex(self.server_db_combo.findData(self.current_db_server['id']))
 
         
-   
-
     def fill_server_table(self):
         self.server_table.clear()
         self.server_table.setColumnCount(3)
@@ -120,18 +127,39 @@ class ServersTab(QWidget):
             self.server_table.setItem(index, 1, QTableWidgetItem(server['ip_addr']))
             self.server_table.setItem(index, 2, QTableWidgetItem(str(server['id'])))
             
-    def server_changed(self, state, index):
-        reply = QMessageBox.question(None, "Question", "Are you sure?", 
+                        
+    def server_changed(self, index):
+        reply = QMessageBox.question(None, "Question", "Are you sure you want to change the Server?", 
                              QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
                              QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.Yes:
-            print("Answer: Yes")
+            server_mgr = ServerManger()
+            server_id = self.server_combo.currentData()
+            result_dict = server_mgr.set_current_server(server_id)
+            self.msg_label.setText(result_dict['message'])
+            if result_dict['status'] == 'error':
+                self.msg_label.setStyleSheet('color: red')
+            elif result_dict['status'] == 'success':
+                self.msg_label.setStyleSheet('color: green')
         else:
-            print("Answer: No")
-        print('State:', state, 'Index:', index)
+            self.server_combo.setCurrentIndex(self.server_combo.findData(self.current_server['id']))
+        print('Index:', index)
 
-    def server_db_changed(self, state, index):
-        print('State:', state, 'Index:', index)
+    def server_db_changed(self, index):
+        reply = QMessageBox.question(None, "Question", "Are you sure you want to change the Database Server?", 
+                             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
+                             QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
+            server_mgr = ServerManger()
+            server_id = self.server_db_combo.currentData()
+            result_dict = server_mgr.set_current_db_server(server_id)
+            self.msg_label.setText(result_dict['message'])
+            if result_dict['status'] == 'error':
+                self.msg_label.setStyleSheet('color: red')
+            elif result_dict['status'] == 'success':
+                self.msg_label.setStyleSheet('color: green')
+        else:
+            self.server_combo.setCurrentIndex(self.server_combo.findData(self.current_server['id']))
 
     def add_server(self):
         dlg_add_server = ServerAddEdit(self, dlg_type='add')

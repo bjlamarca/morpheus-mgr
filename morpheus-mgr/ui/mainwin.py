@@ -8,8 +8,9 @@ from PySide6.QtCore import Qt
 from ui.huemain import HueMainWindow
 from ui.settingsui import SettingsMainWindow
 
-from ui.utilities import WindowHandler
-from system.ultilities import load_stylesheet, get_icon_obj
+
+from ui.utilities import load_stylesheet, get_icon_obj
+
 
 
 class MainWindow(QMainWindow):
@@ -17,6 +18,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Morpheus")
         self.setWindowIcon(get_icon_obj("morpheus-48"))
+        self.status_bar = self.statusBar()
+        self.status_bar.showMessage("Ready", 5000)
         menu_bar = self.menuBar()
         
         system_menu = QMenu("System", self)
@@ -43,7 +46,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         #self.add_tab("huewin")
-        #self.add_tab("settings")
+        self.add_tab("settings")
         
     
     def close_tab(self, index):
@@ -66,9 +69,6 @@ class MainWindow(QMainWindow):
     def connect_websocket(self):
         pass
 
-
-
-
     def create_menus(self):
         menu_bar = self.menuBar()
         
@@ -84,7 +84,9 @@ class MainWindow(QMainWindow):
             hue_win = HueMainWindow()
             sub = self.mdi_area.addSubWindow(hue_win)
             sub.show()
-            
+
+    def update_status_bar(self, sender, msg):
+        self.status_bar.showMessage(msg, 5000)
 
 
 def start_app():
