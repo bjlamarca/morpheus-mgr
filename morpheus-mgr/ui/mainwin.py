@@ -7,15 +7,15 @@ from PySide6.QtCore import Qt
 
 from ui.huemain import HueMainWindow
 from ui.settingsui import SettingsMainWindow
-
-
 from ui.utilities import load_stylesheet, get_icon_obj
-
+from system.signals import Signal
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        signal = Signal()
+        signal.connect('main_status_bar', self.update_status_bar)
         self.setWindowTitle("Morpheus")
         self.setWindowIcon(get_icon_obj("morpheus-48"))
         self.status_bar = self.statusBar()

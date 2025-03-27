@@ -55,8 +55,7 @@ class ServerManger:
                 password=cls.db_password)
             #run a test query to see if connection is successful
             from system.models import Room
-            test_QS = Room.select()
-            print('srv db:', cls.db)
+            test_qs = Room.select()
         except Exception as e:
             cls.db_connected = False
             msg_dict['status'] = 'error'
@@ -123,7 +122,6 @@ class ServerManger:
             
     def set_current_db_server(cls, server_id):
         msg_dict = {}
-        print('server_id:', server_id)
         try: 
             f = open(BASE_DIR + '/settings.json', 'r')
             settings = json.load(f)
@@ -167,7 +165,7 @@ class ServerManger:
             }
             server_list.append(server)
             cls.set_server_list(server_list)
-            print('Server list:', server_list)
+            
         except Exception as e:
                     traceback.print_exc()
                     logger.log('add_server', 'Error adding server.', str(e) + traceback.format_exc(), 'ERROR')

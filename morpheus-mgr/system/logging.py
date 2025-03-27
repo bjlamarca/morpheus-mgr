@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = str(Path(__file__).resolve().parent.parent)
          
 
 LOG_LEVEL = (

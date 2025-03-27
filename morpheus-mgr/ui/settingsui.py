@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from PySide6.QtGui import Qt
 
 from ui.widgets import YesNoBox, LogViewer
-from system.ultilities import get_icon_obj
+from ui.utilities import get_icon_obj
 from system.server import ServerManger
 
 

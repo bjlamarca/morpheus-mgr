@@ -2,12 +2,11 @@
 from peewee import *
 from system.models import DeviceType
 from system.server import ServerManger
-
-
 from system.models import DeviceType
+
 server_manager = ServerManger()
 db = server_manager.db
-print('hue models db:', db)
+
 
 
 class BaseModel(Model):

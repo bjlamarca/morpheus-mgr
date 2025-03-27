@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from PySide6.QtGui import Qt
 
 
-from system.ultilities import get_icon_obj
+from ui.utilities import get_icon_obj
 from hue.models import HueBridge, HueDevice, HueButton, HueLight
 from hue.utilities import HueUtilities
 from hue.bridge import HueBridgeUtils
