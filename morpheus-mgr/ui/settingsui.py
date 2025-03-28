@@ -5,7 +5,7 @@ from PySide6.QtGui import Qt
 
 from ui.widgets import YesNoBox, LogViewer
 from ui.utilities import get_icon_obj
-from system.server import ServerManger
+from system.server import ServerManger, ServerWebsocket
 
 
 class SettingsMainWindow(QMainWindow):
@@ -33,6 +33,12 @@ class ServersTab(QWidget):
         self.tab_server_layout = QVBoxLayout()
         self.setLayout(self.tab_server_layout)
         
+        connect_layout = QHBoxLayout()
+        btn_connect_server = QPushButton('Connect to Server')
+        btn_connect_server.clicked.connect(self.connect_server)
+        connect_layout.addWidget(btn_connect_server)
+        connect_layout.addStretch()
+
         server_layout = QHBoxLayout()
         server_Vlayout = QVBoxLayout()
         self.server_combo = QComboBox()
@@ -84,6 +90,7 @@ class ServersTab(QWidget):
         msg_layout.addWidget(self.msg_label)
         msg_layout.addStretch()
         
+        self.tab_server_layout.addLayout(connect_layout)
         self.tab_server_layout.addLayout(server_layout)
         self.tab_server_layout.addLayout(list_btn_layout)
         self.tab_server_layout.addLayout(server_msgbox_layout)
@@ -93,7 +100,9 @@ class ServersTab(QWidget):
 
         self.server_msgbox.hide()
         
-
+    def connect_server(self):
+        server = ServerWebsocket()
+        server.webs_test()
     def showEvent(self, event):
         self.fill_server_table()
         self.fill_server_combos()

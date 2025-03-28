@@ -11,19 +11,25 @@ logger = SystemLogger(__name__)
 
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
 
-async def connect_to_websocket(url):
-    async with connect(url) as websocket:
-        while True:
-            message = await websocket.recv()
-            print(message)
 
-async def send():
-    async with connect('ws://192.168.55.235:8001') as websocket:
-        await websocket.send('hello')
+class ServerWebsocket:
+    def __init__(self, url='127.0.0.1'):
+        self.url = url
+        self.websocket = None
+
+    async def connect_to_websocket(self):
+        async with connect(self.url) as self.websocket:
+            while True:
+                message = await self.websocket.recv()
+                print(message)
+
+    async def send(self):
+        async with connect('ws://' + self.url + ':8001') as websocket:
+            await websocket.send('hello')
 
 
-def webs_test():
-    asyncio.run(send())
+    def webs_test(self):
+        asyncio.run(self.send())
 
 
 class ServerManger:

@@ -1,0 +1,6 @@
+asyncio
+websockets
+peewee
+psycopg2
+pyside6
+requests
