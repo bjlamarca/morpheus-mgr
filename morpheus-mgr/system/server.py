@@ -12,27 +12,8 @@ logger = SystemLogger(__name__)
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
 
 
-class ServerWebsocket:
-    def __init__(self, url='127.0.0.1'):
-        self.url = url
-        self.websocket = None
-
-    async def connect_to_websocket(self):
-        async with connect(self.url) as self.websocket:
-            while True:
-                message = await self.websocket.recv()
-                print(message)
-
-    async def send(self):
-        async with connect('ws://' + self.url + ':8001') as websocket:
-            await websocket.send('hello')
-
-
-    def webs_test(self):
-        asyncio.run(self.send())
-
-
 class ServerManger:
+
     _instance = None
     db_connected = False
     db = None
@@ -46,7 +27,7 @@ class ServerManger:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls.connect_db_server(cls)
-              
+                
         return cls._instance
 
     def __init__(cls):
@@ -84,7 +65,7 @@ class ServerManger:
         settings = json.load(f)
         server_list = settings['server_list']
         return server_list
-    
+
     def set_server_list(cls, server_list):
         f = open(BASE_DIR + '/settings.json', 'r')
         settings = json.load(f)
@@ -238,3 +219,50 @@ class ServerManger:
             msg_dict['status'] = 'success'
             msg_dict['message'] = 'Server has been deleted successfully.'
             return msg_dict
+        
+
+class ServerWebsocket:
+    _instance = None
+    server_connected = False
+    server_host = ''
+    server_port = 8999
+    server_mrg = ServerManger()
+    websocket = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls.server_host = cls.server_mrg.get_current_server()['ip_addr']
+            cls.connect_to_websocket()
+    
+    def __init__(cls):
+        pass
+
+    async def connect_to_websocket(cls):
+        msg_dict = {}
+        try:
+            async with connect(cls.server_host) as cls.websocket:
+                cls.server_connected = True
+                while True:
+                    message = await cls.websocket.recv()
+                    print(message)
+        except Exception as e:
+            cls.server_connected = False
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error connecting to websocket server.'
+            logger.log('connect_to_websocket', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
+
+    async def send(cls):
+        msg_dict = {}
+        try:
+            async with connect('ws://' + cls.server_host + ':' + cls.server_port) as websocket:
+                await websocket.send('hello')
+        except Exception as e:
+            cls.server_connected = False
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error sending to websocket server.'
+            logger.log('connect_to_websocket', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR')
+
+
+    def webs_test(self):
+        asyncio.run(self.send())
