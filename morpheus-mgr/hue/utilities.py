@@ -1,6 +1,6 @@
 import ipaddress
 from hue.models import HueBridge
-from system.logging import SystemLogger
+from system.logger import SystemLogger
 logger = SystemLogger(__name__)
 
 

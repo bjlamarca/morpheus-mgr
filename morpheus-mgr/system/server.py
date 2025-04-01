@@ -1,9 +1,7 @@
-import json, traceback, ipaddress
+import json, traceback, ipaddress, socket, threading
 from pathlib import Path
-import asyncio
-from websockets.asyncio.client import connect
 from peewee import PostgresqlDatabase
-from system.logging import SystemLogger
+from system.logger import SystemLogger
 from system.signals import Signal
 
 logger = SystemLogger(__name__)
@@ -26,7 +24,7 @@ class ServerManger:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls.connect_db_server(cls)
+            cls.connect_db_server(cls._instance)
                 
         return cls._instance
 
@@ -44,6 +42,7 @@ class ServerManger:
             from system.models import Room
             test_qs = Room.select()
         except Exception as e:
+            traceback.print_exc()
             cls.db_connected = False
             msg_dict['status'] = 'error'
             msg_dict['message'] = 'Error connecting to database server.'
@@ -221,48 +220,25 @@ class ServerManger:
             return msg_dict
         
 
-class ServerWebsocket:
+class ServerSocket:
     _instance = None
     server_connected = False
     server_host = ''
-    server_port = 8999
+    server_port = '8999'
     server_mrg = ServerManger()
     websocket = None
 
     def __new__(cls):
         if cls._instance is None:
+            print('Creating new instance of ServerWebsocket')
             cls._instance = super().__new__(cls)
             cls.server_host = cls.server_mrg.get_current_server()['ip_addr']
-            cls.connect_to_websocket()
+           
+        return cls._instance
     
     def __init__(cls):
-        pass
+        print('Initializing ServerWebsocket')
 
-    async def connect_to_websocket(cls):
-        msg_dict = {}
-        try:
-            async with connect(cls.server_host) as cls.websocket:
-                cls.server_connected = True
-                while True:
-                    message = await cls.websocket.recv()
-                    print(message)
-        except Exception as e:
-            cls.server_connected = False
-            msg_dict['status'] = 'error'
-            msg_dict['message'] = 'Error connecting to websocket server.'
-            logger.log('connect_to_websocket', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
-
-    async def send(cls):
-        msg_dict = {}
-        try:
-            async with connect('ws://' + cls.server_host + ':' + cls.server_port) as websocket:
-                await websocket.send('hello')
-        except Exception as e:
-            cls.server_connected = False
-            msg_dict['status'] = 'error'
-            msg_dict['message'] = 'Error sending to websocket server.'
-            logger.log('connect_to_websocket', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR')
-
-
-    def webs_test(self):
-        asyncio.run(self.send())
+    def connect_socket(cls):
+        
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 

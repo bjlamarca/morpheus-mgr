@@ -1,5 +1,5 @@
 import json, requests, traceback, time, threading
-from system.logging import SystemLogger  
+from system.logger import SystemLogger  
 from hue.models import HueBridge, HueDevice, HueLight, HueButton
 from system.models import DeviceType
 from system.signals import Signal

@@ -101,8 +101,10 @@ class ServersTab(QWidget):
         self.server_msgbox.hide()
         
     def connect_server(self):
-        server = ServerWebsocket()
-        server.webs_test()
+        print('CS1')
+        ws = ServerWebsocket()
+        print('CS2')
+        ws.ws_test()
     def showEvent(self, event):
         self.fill_server_table()
         self.fill_server_combos()

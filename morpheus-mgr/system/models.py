@@ -1,7 +1,6 @@
 from peewee import *
 from system.server import ServerManger
 
-
 server_manager = ServerManger()
 db = server_manager.db
 
