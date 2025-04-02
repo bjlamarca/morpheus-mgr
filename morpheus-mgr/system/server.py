@@ -224,10 +224,11 @@ class ServerSocket:
     _instance = None
     server_connected = False
     server_host = ''
-    server_port = '8999'
+    server_port = 8999
     server_mrg = ServerManger()
     websocket = None
-
+    client = None
+    
     def __new__(cls):
         if cls._instance is None:
             print('Creating new instance of ServerWebsocket')
@@ -237,8 +238,21 @@ class ServerSocket:
         return cls._instance
     
     def __init__(cls):
-        print('Initializing ServerWebsocket')
+        pass
 
     def connect_socket(cls):
+
+        cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        cls.client.connect((cls.server_host, cls.server_port))
         
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    def send(cls, message):
+        if cls.client:
+            msg = message.encode('utf-8')
+            msg_length = len(msg)
+            send_length = str(msg_length).encode('utf-8')
+            send_length += b' ' * (256 - len(send_length))
+            cls.client.send(send_length)
+            cls.client.send(msg)
+    
+
+      
