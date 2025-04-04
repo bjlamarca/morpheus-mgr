@@ -1,5 +1,5 @@
 {
-    "server_list": [
+    "hub_list": [
         {
             "name": "Local",
             "ip_addr": "127.0.0.1",
@@ -9,8 +9,13 @@
             "name": "PC",
             "ip_addr": "192.168.55.235",
             "id": 2
+        },
+        {
+            "name": "VM",
+            "ip_addr": "10.10.10.5",
+            "id": 3
         }
     ],
-    "current_server_id": 1,
-    "current_db_server_id": 2
+    "current_hub_id": 1,
+    "current_db_hub_id": 3
 }

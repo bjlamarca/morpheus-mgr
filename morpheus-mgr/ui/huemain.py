@@ -116,7 +116,7 @@ class GeneralTab(QWidget):
 
         #self.log_msg.hide()
         self.fill_bridge_combo()
-        signal.connect('hue_mgr', self.updates_msg)
+        signal.connect('hue_mgr_ui', self.updates_msg)
 
     def showEvent(self, event):
         self.fill_bridge_combo()
@@ -131,13 +131,13 @@ class GeneralTab(QWidget):
 
     def sync_device_types(self):
         hue_bridge = HueBridgeUtils()
-        responce = hue_bridge.sync_device_types('hue_mgr')
+        responce = hue_bridge.sync_device_types('hue_mgr_ui')
 
     def sync_bridge(self):
         bridge_id = self.bridge_combo.currentData()
         if bridge_id > 0:            
             hue_bridge = HueBridgeUtils()
-            responce = hue_bridge.sync_bridge(bridge_id, 'hue_mgr')
+            responce = hue_bridge.sync_bridge(bridge_id, 'hue_mgr_ui')
 
            
     def updates_msg(self, sender, msg_dict):

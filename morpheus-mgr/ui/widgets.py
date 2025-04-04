@@ -172,7 +172,7 @@ class CircleIndicatorWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Green Circle")
-        self.setFixedSize(25, 25)
+        self.setFixedSize(15, 15)
 
     def paintEvent(self, event):
         painter = QPainter(self)

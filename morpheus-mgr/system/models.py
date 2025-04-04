@@ -1,8 +1,8 @@
 from peewee import *
-from system.server import ServerManger
+from system.hub import HubManger
 
-server_manager = ServerManger()
-db = server_manager.db
+hub_manager = HubManger()
+db = hub_manager.db
 
 class BaseModel(Model):
     class Meta:

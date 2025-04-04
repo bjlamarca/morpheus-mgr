@@ -1,4 +1,4 @@
-from system.server import ServerManger, ServerSocket
+from system.hub import HubManger, HubSocket
 
 from ui.mainwin import start_app
 from hue.models import update_tables

@@ -1,11 +1,11 @@
 
 from peewee import *
 from system.models import DeviceType
-from system.server import ServerManger
+from system.hub import HubManger
 from system.models import DeviceType
 
-server_manager = ServerManger()
-db = server_manager.db
+hub_manager = HubManger()
+db = hub_manager.db
 
 
 
