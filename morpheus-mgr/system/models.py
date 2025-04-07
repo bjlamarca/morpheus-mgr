@@ -4,6 +4,7 @@ from system.hub import HubManger
 hub_manager = HubManger()
 db = hub_manager.db
 
+
 class BaseModel(Model):
     class Meta:
         database = db

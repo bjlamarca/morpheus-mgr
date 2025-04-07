@@ -1,4 +1,4 @@
-import json, traceback, ipaddress, socket, threading
+import json, traceback, ipaddress, socket, threading, time
 from pathlib import Path
 from peewee import PostgresqlDatabase
 from system.logger import SystemLogger
@@ -13,7 +13,7 @@ BASE_DIR = str(Path(__file__).resolve().parent.parent)
 class HubManger:
 
     _instance = None
-    db_connected = False
+    db_conn_status = 'disconnected'
     db = None
     db_name = 'morpheus2'
     db_host = ''
@@ -41,9 +41,11 @@ class HubManger:
             #run a test query to see if connection is successful
             from system.models import Room
             test_qs = Room.select()
+            count = test_qs.count()
+            print('test_qs', count)
         except Exception as e:
             traceback.print_exc()
-            cls.db_connected = False
+            cls.db_conn_status = 'error'
             msg_dict['status'] = 'error'
             msg_dict['message'] = 'Error connecting to database hub.'
             logger.log('connect_db_hub', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
@@ -51,13 +53,22 @@ class HubManger:
                 Signal().send(signal_grp, cls, msg_dict)
             return msg_dict
         else:
-            cls.db_connected = True
+            cls.db_conn_status = 'connected'
             msg_dict['status'] = 'success'
             msg_dict['message'] = 'Connected to database hub.'
             if signal_grp:
                 Signal().send(signal_grp, cls, msg_dict)
             logger.log('connect_db_hub', 'Connected to database hub.', 'Database hub: ' + cls.db_host, 'INFO')
             return msg_dict
+
+    def get_db_status(cls, signal_grp=None):
+        signal = Signal()
+        msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'update'
+        msg_dict['item'] = 'hub_db_connect'
+        msg_dict['value'] = cls.db_conn_status
+        signal.send(signal_grp, cls, msg_dict, True)    
 
     def get_hub_list(cls):
         f = open(BASE_DIR + '/settings.json', 'r')
@@ -219,40 +230,143 @@ class HubManger:
             msg_dict['message'] = 'hub has been deleted successfully.'
             return msg_dict
         
-
+    
 class HubSocket:
     _instance = None
-    hub_connected = False
+    hub_connected = 'disconnected'
     hub_host = ''
     hub_port = 8999
-    hub_mrg = HubManger()
+    hub_mgr = HubManger()
     websocket = None
     client = None
     
     def __new__(cls):
         if cls._instance is None:
-            print('Creating new instance of hub socket')
             cls._instance = super().__new__(cls)
-            cls.hub_host = cls.hub_mrg.get_current_hub()['ip_addr']
+            cls.hub_host = cls.hub_mgr.get_current_hub()['ip_addr']
            
         return cls._instance
     
     def __init__(cls):
         pass
 
-    def connect_socket(cls):
-
-        cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        cls.client.connect((cls.hub_host, cls.hub_port))
+    def connect_socket(cls, signal_grp=None):
+        msg_dict = {}
+        print('Connecting to hub socket', signal_grp)
+        if signal_grp:
+            signal = Signal()
+            msg_dict['area'] = 'system'
+            msg_dict['type'] = 'message'
+            msg_dict['status'] = 'info'
+            msg_dict['message'] = 'Connecting to hub...' 
+            signal.send(signal_grp, cls, msg_dict, True)
+        try:
+            print('Trying.....')
+            cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            cls.client.connect((cls.hub_host, cls.hub_port))
+        except Exception as e:
+            traceback.print_exc()
+            cls.hub_connected = 'error'
+            msg_dict['area'] = 'system'
+            msg_dict['type'] = 'message'
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error connecting to hub.'
+            
+            logger.log('connect_socket', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
+            if signal_grp:
+                signal.send(signal_grp, cls, msg_dict, True)
+            return msg_dict
+        else:
+            cls.hub_connected = 'connected'
+            if signal_grp:
+                msg_dict['area'] = 'system'
+                msg_dict['type'] = 'message'
+                msg_dict['status'] = 'success'
+                msg_dict['message'] = 'Connected to hub.'
+                signal.send(signal_grp, cls, msg_dict, True)
+            logger.log('connect_socket', 'Connected to hub.', 'Hub: ' + cls.hub_host, 'INFO')
+            return msg_dict
         
-    def send(cls, message):
-        if cls.client:
-            msg = message.encode('utf-8')
-            msg_length = len(msg)
-            send_length = str(msg_length).encode('utf-8')
-            send_length += b' ' * (256 - len(send_length))
-            cls.client.send(send_length)
-            cls.client.send(msg)
-    
+    def disconnect_socket(cls, signal_grp=None):
+        msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
+        msg_dict['status'] = 'info'
+        msg_dict['message'] = 'Disconnecting from hub...' 
+        if signal_grp:
+            signal = Signal()
+            signal.send(signal_grp, cls, msg_dict, True)
+        try:
+            if cls.hub_connected == 'connected':
+                message = '!DISCONNECT'
+                msg = message.encode('utf-8')
+                msg_length = len(msg)
+                send_length = str(msg_length).encode('utf-8')
+                send_length += b' ' * (256 - len(send_length))
+                cls.client.send(send_length)
+                cls.client.send(msg)
+            
+        except Exception as e:
+            traceback.print_exc()
+            cls.hub_connected = 'error'
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error sending disconnect message to hub.'
+            logger.log('disconnect_socket', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
+            if signal_grp:
+                signal.send(signal_grp, cls, msg_dict, True)
+            return msg_dict
+        else:
+            cls.hub_connected = 'disconnected'
+            if signal_grp:
+                msg_dict['status'] = 'success'
+                msg_dict['message'] = 'Succesfully disconnected from hub.'
+                signal.send(signal_grp, cls, msg_dict, True)
+            logger.log('disconnect_socket', 'Disconnected from hub.', 'Hub: ' + cls.hub_host, 'INFO')
+            return msg_dict
 
-      
+    def send(cls, message):
+        try:
+            if cls.hub_connected == 'connected':
+                msg = message.encode('utf-8')
+                msg_length = len(msg)
+                send_length = str(msg_length).encode('utf-8')
+                send_length += b' ' * (256 - len(send_length))
+                cls.client.send(send_length)
+                cls.client.send(msg)
+        except Exception as e:
+            traceback.print_exc()
+            logger.log('send', 'Error sending to hub.', str(e) + traceback.format_exc(), 'ERROR')
+        
+
+    def get_status(cls, signal_grp=None):
+        signal = Signal()
+        msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'update'
+        msg_dict['item'] = 'hub_connect'
+        msg_dict['value'] = cls.hub_connected
+        signal.send(signal_grp, cls, msg_dict, True)
+
+    def keep_alive(cls):
+        msg_dict = {}
+        while True:
+            try:
+                if cls.hub_connected == 'connected':
+                    message = '!KEEPALIVE'
+                    msg = message.encode('utf-8')
+                    msg_length = len(msg)
+                    send_length = str(msg_length).encode('utf-8')
+                    send_length += b' ' * (256 - len(send_length))
+                    cls.client.send(send_length)
+                    cls.client.send(msg)
+            except Exception as e:
+                cls.hub_connected = 'error'
+                traceback.print_exc()
+                logger.log('keep_alive', 'Error sending keep alive to hub.', str(e) + traceback.format_exc(), 'ERROR')
+                msg_dict['area'] = 'system'
+                msg_dict['type'] = 'update'
+                msg_dict['item'] = 'hub_connect'
+                msg_dict['value'] = cls.hub_connected
+                signal = Signal()
+                signal.send('system', cls, msg_dict, True)
+                time.sleep(5)

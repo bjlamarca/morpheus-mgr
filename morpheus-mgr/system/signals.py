@@ -20,11 +20,10 @@ class Signal():
         cls.handlers.remove(handler)
         #print('Signal disconnected')
 
-    def send(cls, group, sender, data_dict):
-        #print('Signal sent', group, sender, data_dict)
+    def send(cls, group, sender, data_dict, local_only=False):
+        print('Signal sent', group, sender, data_dict)
         for handler in cls.handlers:
             if handler[0] == group:
                 handler[1](sender,  data_dict)
 
     
-                

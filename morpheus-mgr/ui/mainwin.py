@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
 from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtCore import Qt
 
-from ui.huemain import HueMainWindow
+from ui.hueui import HueMainWindow
 from ui.settingsui import SettingsMainWindow
 from ui.utilities import load_stylesheet, get_icon_obj
 from system.signals import Signal

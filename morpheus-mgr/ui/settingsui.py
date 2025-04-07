@@ -31,21 +31,50 @@ class HubsTab(QWidget):
         super().__init__()
         signal = Signal()
         self.socket = HubSocket()
+        self.hub_mgr = HubManger() 
         self.current_hub = None
         self.current_db_hub = None
         self.tab_hub_layout = QVBoxLayout()
         self.setLayout(self.tab_hub_layout)
         
-        connect_layout = QHBoxLayout()
+        # Connect group box
+        connect_grpbox = QGroupBox("Hub Connection")
+        connect_grpbox.setStyleSheet("QGroupBox { font-weight: bold; }")
+        connect_grpbox.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        connect_H_layout = QHBoxLayout()  
+        connect_V_layout = QVBoxLayout()        
+        
+        ind_hub_layout = QHBoxLayout()
+        ind_hub_label = QLabel('Hub :')
+        self.hub_indicator = CircleIndicatorWidget()
+        ind_hub_layout.addWidget(ind_hub_label)
+        ind_hub_layout.addWidget(self.hub_indicator)
+        
+        ind_db_layout = QHBoxLayout()
+        ind_db_label = QLabel('Database:')
+        self.db_indicator = CircleIndicatorWidget()
+        ind_db_layout.addWidget(ind_db_label)
+        ind_db_layout.addWidget(self.db_indicator)
+
         btn_connect_hub = QPushButton('Connect to Hub')
         btn_connect_hub.clicked.connect(self.connect_hub)
+        btn_disconnect_hub = QPushButton('Disconnect Hub')
+        btn_disconnect_hub.clicked.connect(self.disconnect_hub)
         btn_test_hub = QPushButton('Test Hub')
         btn_test_hub.clicked.connect(self.test_socket)
-        hub_indicator = CircleIndicatorWidget()
-        connect_layout.addWidget(btn_connect_hub)
-        connect_layout.addWidget(btn_test_hub)
-        connect_layout.addWidget(hub_indicator)
-        connect_layout.addStretch()
+        connect_V_layout.addWidget(btn_connect_hub)
+        connect_V_layout.addWidget(btn_disconnect_hub)
+        connect_V_layout.addWidget(btn_test_hub)
+        connect_V_layout.addLayout(ind_hub_layout)
+        connect_V_layout.addLayout(ind_db_layout)
+        connect_V_layout.addStretch()
+        
+        connect_H_layout.addLayout(connect_V_layout)
+        connect_H_layout.addStretch()
+        
+        connect_grpbox.setLayout(connect_H_layout)
+        ##
+
 
         hub_layout = QHBoxLayout()
         hub_Vlayout = QVBoxLayout()
@@ -85,6 +114,7 @@ class HubsTab(QWidget):
         hub_tbl_layout = QHBoxLayout()
         self.hub_table = QTableWidget()
         self.hub_table.setMinimumWidth(450)
+        self.hub_table.setMinimumHeight(400)
         hub_tbl_layout.addWidget(self.hub_table)
         hub_tbl_layout.addStretch()
 
@@ -103,42 +133,77 @@ class HubsTab(QWidget):
         log_layout.addWidget(self.log_viewer)
         log_layout.addStretch()
 
-        self.tab_hub_layout.addLayout(connect_layout)
+        self.tab_hub_layout.addWidget(connect_grpbox)
+        self.tab_hub_layout.addLayout(log_layout)
         self.tab_hub_layout.addLayout(hub_layout)
         self.tab_hub_layout.addLayout(list_btn_layout)
         self.tab_hub_layout.addLayout(hub_msgbox_layout)
         self.tab_hub_layout.addLayout(hub_tbl_layout)
         self.tab_hub_layout.addLayout(msg_layout)
-        self.tab_hub_layout.addLayout(log_layout)
         self.tab_hub_layout.addStretch()
 
         self.hub_msgbox.hide()
         self.log_viewer.hide()
-
-        signal.connect('hub_mgr_ui', self.update_log)
-
         
+        signal.connect('hub_mgr_ui', self.receive_signals)
+        signal.connect('system', self.receive_signals)
+        self.hub_mgr.get_db_status('hub_mgr_ui')
+        self.socket.get_status('hub_mgr_ui')
+        
+
+    def showEvent(self, event):
+        print('showEvent', event)
+
+    def receive_signals(self, sender, msg_dict):
+        print('msg', msg_dict)
+        if msg_dict['area'] == 'system':
+            if msg_dict['type'] == 'update':
+                if msg_dict['item'] == 'hub_db_connect':
+                    if msg_dict['value'] == 'connected':
+                        self.db_indicator.set_color('green')
+                    elif msg_dict['value'] == 'disconnected':
+                        self.db_indicator.set_color('grey')
+                    elif msg_dict['value'] == 'error':
+                        self.db_indicator.set_color('red')
+                elif msg_dict['item'] == 'hub_connect':
+                    if msg_dict['value'] == 'connected':
+                        self.hub_indicator.set_color('green')
+                    elif msg_dict['value'] == 'disconnected':
+                        self.hub_indicator.set_color('grey')
+                    elif msg_dict['value'] == 'error':
+                        self.hub_indicator.set_color('red')
+            elif msg_dict['type'] == 'message':
+                self.log_viewer.update_log(msg_dict)
+            
+        
+        #self.log_viewer.update_log(msg_dict)      
         
     def connect_hub(self):
-        self.socket.connect_socket()
+        self.socket.connect_socket('hub_mgr_ui')
+        self.socket.get_status('hub_mgr_ui')
+        
+    def disconnect_hub(self):
+        self.socket.disconnect_socket('hub_mgr_ui')
+        self.socket.get_status('hub_mgr_ui')
         
     def test_socket(self):
-        self.socket.send('A message!!!')
+        #self.socket.send('A message!!!')
+        self.hub_mgr.get_db_status('hub_mgr_ui')
+        self.socket.get_status('hub_mgr_ui')
 
     def showEvent(self, event):
         self.fill_hub_table()
         self.fill_hub_combos()
 
     def fill_hub_combos(self):
-        hub_mgr = HubManger()
         self.hub_combo.clear()
         self.hub_db_combo.clear()
-        hub_list = hub_mgr.get_hub_list()
+        hub_list = self.hub_mgr.get_hub_list()
         for hub in hub_list:
             self.hub_combo.addItem(hub['name'], hub['id'])
             self.hub_db_combo.addItem(hub['name'], hub['id'])
-        self.current_hub = hub_mgr.get_current_hub()
-        self.current_db_hub = hub_mgr.get_current_db_hub()
+        self.current_hub = self.hub_mgr.get_current_hub()
+        self.current_db_hub = self.hub_mgr.get_current_db_hub()
         self.hub_combo.setCurrentIndex(self.hub_combo.findData(self.current_hub['id']))
         self.hub_db_combo.setCurrentIndex(self.hub_db_combo.findData(self.current_db_hub['id']))
 
@@ -164,9 +229,8 @@ class HubsTab(QWidget):
                              QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
                              QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.Yes:
-            hub_mgr = HubManger()
             hub_id = self.hub_combo.currentData()
-            result_dict = hub_mgr.set_current_hub(hub_id)
+            result_dict = self.hub_mgr.set_current_hub(hub_id)
             self.msg_label.setText(result_dict['message'])
             if result_dict['status'] == 'error':
                 self.msg_label.setStyleSheet('color: red')
@@ -174,16 +238,14 @@ class HubsTab(QWidget):
                 self.msg_label.setStyleSheet('color: green')
         else:
             self.hub_combo.setCurrentIndex(self.hub_combo.findData(self.current_hub['id']))
-        print('Index:', index)
-
+       
     def hub_db_changed(self, index):
         reply = QMessageBox.question(None, "Question", "Are you sure you want to change the Database Hub?", 
                              QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
                              QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.Yes:
-            hub_mgr = HubManger()
             hub_id = self.hub_db_combo.currentData()
-            result_dict = hub_mgr.set_current_db_hub(hub_id)
+            result_dict = self.hub_mgr.set_current_db_hub(hub_id)
             self.msg_label.setText(result_dict['message'])
             if result_dict['status'] == 'error':
                 self.msg_label.setStyleSheet('color: red')
@@ -216,8 +278,7 @@ class HubsTab(QWidget):
                 
         if caller == 'yes':
             hub_id = value
-            hub_mgr = HubManger()
-            result = hub_mgr.delete_hub(hub_id)
+            result = self.hub_mgr.delete_hub(hub_id)
             if result['status'] == 'success':
                 self.msg_label.setText(result['message'])
                 self.hub_msgbox.hide()
@@ -230,8 +291,7 @@ class HubsTab(QWidget):
         elif caller == 'no':
             self.hub_msgbox.hide()
 
-    def update_log(self, sender, msg_dict):
-        self.log_viewer.update_log(msg_dict)
+    
        
 class HubAddEdit(QDialog):
     def __init__(self, parent=None, dlg_type=None, hub_id=None):

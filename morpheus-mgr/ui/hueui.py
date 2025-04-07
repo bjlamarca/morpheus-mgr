@@ -112,9 +112,6 @@ class GeneralTab(QWidget):
         self.tab_general_layout.addStretch()
         
         self.log_viewer.hide()
-        
-
-        #self.log_msg.hide()
         self.fill_bridge_combo()
         signal.connect('hue_mgr_ui', self.updates_msg)
 

@@ -47,12 +47,9 @@ class LogMsgBox(QFrame):
             self.html_list.append('<li style="color:lawngreen;">' + msg_dict['message'] + '</li>')
         
         html = '<ul style="list-style-type:none;">' + ''.join(self.html_list) + '</ul>'
-
-        print('LogMsgBox: ', msg_dict)
         self.txt_edit.setText(html)
 
     def msg_update(self, sender, msg):
-        print('LogMsgBox: ', msg)
         self.txt_edit.setText(str(msg))
 
 
@@ -61,7 +58,7 @@ class LogViewer(QFrame):
     def __init__(self):
         super().__init__()
         self.log = []
-        self.setMinimumHeight(200)
+        #self.setMinimumHeight(200)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
@@ -69,7 +66,7 @@ class LogViewer(QFrame):
         log_tbl_layout = QHBoxLayout()
         self.log_tbl = QTableWidget()
         #self.log_tbl.setMinimumWidth(200)
-        self.log_tbl.setMinimumHeight(400)
+        #self.log_tbl.setMinimumHeight(400)
         log_tbl_layout.addWidget(self.log_tbl)
         log_tbl_layout.addStretch()
         
@@ -84,6 +81,7 @@ class LogViewer(QFrame):
         self.layout.addStretch()
 
     def update_log(self, msg_dict):
+        print('LogViewer: ', msg_dict)
         if msg_dict['status'] == 'clear':
             self.log = []
             self.log_tbl.clear()
@@ -111,6 +109,7 @@ class LogViewer(QFrame):
                 tbl_item = QTableWidgetItem(logitem['message'])
                 tbl_item.setForeground(row_color)
                 self.log_tbl.setItem(index, 0, tbl_item)
+            self.show()
             
 
 class LogViewerGraphics(QGraphicsView):
@@ -171,15 +170,30 @@ class YesNoBox(QGroupBox):
 class CircleIndicatorWidget(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Green Circle")
         self.setFixedSize(15, 15)
+        self.color = 'grey'
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        if self.color == 'grey':
+            brush = QBrush(QColor(128, 128, 128))
+        elif self.color == 'red':
+            brush = QBrush(QColor(255, 0, 0))
+        elif self.color == 'green':
+            brush = QBrush(QColor(0, 255, 0))
+        elif self.color == 'blue':
+            brush = QBrush(QColor(0, 0, 255))
+        elif self.color == 'yellow':
+            brush = QBrush(QColor(255, 255, 0))
+        elif self.color == 'orange':
+            brush = QBrush(QColor(255, 165, 0))
+        elif self.color == 'purple':
+            brush = QBrush(QColor(128, 0, 128))
 
         # Set brush color to green
-        brush = QBrush(QColor(0, 255, 0))
+        
         painter.setBrush(brush)
 
         # Draw the circle, centered in the widget
@@ -187,4 +201,7 @@ class CircleIndicatorWidget(QWidget):
         painter.drawEllipse(self.width()/2 - diameter/2, self.height()/2 - diameter/2, diameter, diameter)
 
 
+    def set_color(self, color):
+        self.color = color
+        self.update()
 
