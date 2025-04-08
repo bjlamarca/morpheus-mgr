@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         signal = Signal()
         signal.connect('main_status_bar', self.update_status_bar)
         self.setWindowTitle("Morpheus")
-        self.setWindowIcon(get_icon_obj("morpheus-48"))
+        self.setWindowIcon(get_icon_obj("dream-catcher"))
         self.status_bar = self.statusBar()
         self.status_bar.showMessage("Ready", 5000)
         menu_bar = self.menuBar()

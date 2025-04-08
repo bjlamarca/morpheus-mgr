@@ -155,7 +155,6 @@ class HubsTab(QWidget):
         print('showEvent', event)
 
     def receive_signals(self, sender, msg_dict):
-        print('msg', msg_dict)
         if msg_dict['area'] == 'system':
             if msg_dict['type'] == 'update':
                 if msg_dict['item'] == 'hub_db_connect':
