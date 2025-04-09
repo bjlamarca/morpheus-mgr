@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel,
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget, QLabel,
                                QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
                                QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout)
 from PySide6.QtGui import Qt
@@ -34,63 +34,57 @@ class HubsTab(QWidget):
         self.hub_mgr = HubManger() 
         self.current_hub = None
         self.current_db_hub = None
-        self.tab_hub_layout = QVBoxLayout()
+        
+        self.tab_hub_layout = QGridLayout()
         self.setLayout(self.tab_hub_layout)
         
-        # Connect group box
+        #### Connect group box
+        
         connect_grpbox = QGroupBox("Hub Connection")
         connect_grpbox.setStyleSheet("QGroupBox { font-weight: bold; }")
         connect_grpbox.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        connect_H_layout = QHBoxLayout()  
-        connect_V_layout = QVBoxLayout()        
         
-        ind_hub_layout = QHBoxLayout()
-        ind_hub_label = QLabel('Hub :')
+        
+        connect_grid_layout = QGridLayout()
+        hub_lbl = QLabel('Hub:')
         self.hub_indicator = CircleIndicatorWidget()
-        ind_hub_layout.addWidget(ind_hub_label)
-        ind_hub_layout.addWidget(self.hub_indicator)
+        self.hub_combo = QComboBox()
+        self.hub_combo.setMinimumWidth(100)
+        self.hub_combo.activated.connect(self.hub_changed)
         
-        ind_db_layout = QHBoxLayout()
-        ind_db_label = QLabel('Database:')
+        db_label = QLabel('Database:')
         self.db_indicator = CircleIndicatorWidget()
-        ind_db_layout.addWidget(ind_db_label)
-        ind_db_layout.addWidget(self.db_indicator)
-
+        self.hub_db_combo = QComboBox()
+        self.hub_db_combo.setMinimumWidth(100)
+        self.hub_db_combo.activated.connect(self.hub_db_changed)
+        
         btn_connect_hub = QPushButton('Connect to Hub')
         btn_connect_hub.clicked.connect(self.connect_hub)
         btn_disconnect_hub = QPushButton('Disconnect Hub')
         btn_disconnect_hub.clicked.connect(self.disconnect_hub)
         btn_test_hub = QPushButton('Test Hub')
         btn_test_hub.clicked.connect(self.test_socket)
-        connect_V_layout.addWidget(btn_connect_hub)
-        connect_V_layout.addWidget(btn_disconnect_hub)
-        connect_V_layout.addWidget(btn_test_hub)
-        connect_V_layout.addLayout(ind_hub_layout)
-        connect_V_layout.addLayout(ind_db_layout)
-        connect_V_layout.addStretch()
+               
+        connect_grid_layout.addWidget(hub_lbl, 0, 0, 1, 1)
+        connect_grid_layout.addWidget(self.hub_indicator, 0, 1, 1, 1)
+        connect_grid_layout.addWidget(self.hub_combo, 0, 2, 1, 1)
+        connect_grid_layout.addWidget(db_label, 1, 0, 1, 1)
+        connect_grid_layout.addWidget(self.db_indicator, 1, 1, 1, 1)
+        connect_grid_layout.addWidget(self.hub_db_combo, 1, 2, 1, 1)
+        connect_grid_layout.addWidget(btn_connect_hub, 2, 0, 1, 2)
+        connect_grid_layout.addWidget(btn_disconnect_hub, 3, 0, 1, 2)
+        connect_grid_layout.addWidget(btn_test_hub, 4, 0, 1, 2)
         
-        connect_H_layout.addLayout(connect_V_layout)
-        connect_H_layout.addStretch()
         
-        connect_grpbox.setLayout(connect_H_layout)
-        ##
+        connect_grpbox.setLayout(connect_grid_layout)
 
+        #conn_container_layout.addWidget(connect_grpbox)
+        #conn_container_layout.addStretch()
+                
 
-        hub_layout = QHBoxLayout()
-        hub_Vlayout = QVBoxLayout()
-        self.hub_combo = QComboBox()
-        self.hub_combo.activated.connect(self.hub_changed)
-        self.hub_db_combo = QComboBox()
-        self.hub_db_combo.activated.connect(self.hub_db_changed)
-        
-        form_combo_layout = QFormLayout()
-        form_combo_layout.addRow("Hub", self.hub_combo)
-        form_combo_layout.addRow("Database Hub", self.hub_db_combo)
-        
-        hub_Vlayout.addLayout(form_combo_layout)
-        hub_layout.addLayout(hub_Vlayout)
-        hub_layout.addStretch()
+        #### End Connect group box
 
+        #### Hub list group box
         list_btn_layout = QHBoxLayout()
         btn_add_hub = QPushButton('Add hub')
         btn_add_hub.clicked.connect(self.add_hub)
@@ -105,6 +99,7 @@ class HubsTab(QWidget):
         list_btn_layout.addWidget(btn_edit_hub)
         list_btn_layout.addWidget(btn_del_hub)
         list_btn_layout.addStretch()
+        
         
         hub_msgbox_layout = QHBoxLayout()
         self.hub_msgbox = YesNoBox()
@@ -122,6 +117,7 @@ class HubsTab(QWidget):
         self.msg_label = QLabel('')
         hub_msg_layout.addWidget(self.msg_label)
         hub_msg_layout.addStretch()
+        #### End Hub list group box
 
         msg_layout = QHBoxLayout()
         self.msg_label = QLabel('')
@@ -133,15 +129,13 @@ class HubsTab(QWidget):
         log_layout.addWidget(self.log_viewer)
         log_layout.addStretch()
 
-        self.tab_hub_layout.addWidget(connect_grpbox)
-        self.tab_hub_layout.addLayout(log_layout)
-        self.tab_hub_layout.addLayout(hub_layout)
-        self.tab_hub_layout.addLayout(list_btn_layout)
-        self.tab_hub_layout.addLayout(hub_msgbox_layout)
-        self.tab_hub_layout.addLayout(hub_tbl_layout)
-        self.tab_hub_layout.addLayout(msg_layout)
-        self.tab_hub_layout.addStretch()
-
+        self.tab_hub_layout.addWidget(connect_grpbox, 0, 0, 1, 3)
+        self.tab_hub_layout.addLayout(log_layout, 1, 0, 1, 3)
+        self.tab_hub_layout.addLayout(list_btn_layout, 2, 0, 1, 3)
+        self.tab_hub_layout.addLayout(hub_msgbox_layout, 3, 0, 1, 3)
+        self.tab_hub_layout.addLayout(hub_tbl_layout, 4, 0, 1, 3)
+        self.tab_hub_layout.addLayout(msg_layout, 5, 0, 1, 3)
+        
         self.hub_msgbox.hide()
         self.log_viewer.hide()
         
@@ -150,9 +144,11 @@ class HubsTab(QWidget):
         self.hub_mgr.get_db_status('hub_mgr_ui')
         self.socket.get_status('hub_mgr_ui')
         
+        self.fill_hub_table()
+        self.fill_hub_combos()
 
     def showEvent(self, event):
-        print('showEvent', event)
+        print('show event')
 
     def receive_signals(self, sender, msg_dict):
         if msg_dict['area'] == 'system':
@@ -190,9 +186,6 @@ class HubsTab(QWidget):
         self.hub_mgr.get_db_status('hub_mgr_ui')
         self.socket.get_status('hub_mgr_ui')
 
-    def showEvent(self, event):
-        self.fill_hub_table()
-        self.fill_hub_combos()
 
     def fill_hub_combos(self):
         self.hub_combo.clear()

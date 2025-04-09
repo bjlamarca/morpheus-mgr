@@ -32,7 +32,12 @@ class HubManger:
         pass
 
     def connect_db_hub(cls, signal_grp=None):
+        thread = threading.Thread(target=cls.connect_db_hub_thread, args=(signal_grp,), daemon=True)
+        thread.start()
+
+    def connect_db_hub_thread(cls, signal_grp=None):
         msg_dict = {}
+        msg_dict['area'] = 'system'
         try:
             db_serv_dict = cls.get_current_db_hub()
             cls.db_host = db_serv_dict['ip_addr']
@@ -46,20 +51,36 @@ class HubManger:
         except Exception as e:
             traceback.print_exc()
             cls.db_conn_status = 'error'
+            msg_dict['type'] = 'message'
             msg_dict['status'] = 'error'
             msg_dict['message'] = 'Error connecting to database hub.'
-            logger.log('connect_db_hub', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
+            Signal().send('system', cls, msg_dict, True)
             if signal_grp:
                 Signal().send(signal_grp, cls, msg_dict)
+            msg_dict['type'] = 'update'
+            msg_dict['item'] = 'hub_db_connect'
+            msg_dict['value'] = cls.db_conn_status
+            Signal().send('system', cls, msg_dict, True)
+            if signal_grp:
+                Signal().send(signal_grp, cls, msg_dict)
+            
+            logger.log('connect_db_hub', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
             return msg_dict
         else:
             cls.db_conn_status = 'connected'
+            msg_dict['type'] = 'message'
             msg_dict['status'] = 'success'
             msg_dict['message'] = 'Connected to database hub.'
+            Signal().send('system', cls, msg_dict, True)
+            if signal_grp:
+                Signal().send(signal_grp, cls, msg_dict)
+            msg_dict['type'] = 'update'
+            msg_dict['item'] = 'hub_db_connect'
+            msg_dict['value'] = cls.db_conn_status
+            Signal().send('system', cls, msg_dict, True)
             if signal_grp:
                 Signal().send(signal_grp, cls, msg_dict)
             logger.log('connect_db_hub', 'Connected to database hub.', 'Database hub: ' + cls.db_host, 'INFO')
-            return msg_dict
 
     def get_db_status(cls, signal_grp=None):
         signal = Signal()

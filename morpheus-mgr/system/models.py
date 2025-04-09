@@ -1,13 +1,18 @@
 from peewee import *
 from system.hub import HubManger
 
-hub_manager = HubManger()
-db = hub_manager.db
+
+def get_db():
+    print('Hue DB called')
+    hub_manager = HubManger()
+    db = hub_manager.db
+    return db
+
 
 
 class BaseModel(Model):
     class Meta:
-        database = db
+        database = get_db()
 
 
 class Room(BaseModel):

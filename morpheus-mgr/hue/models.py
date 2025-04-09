@@ -4,14 +4,17 @@ from system.models import DeviceType
 from system.hub import HubManger
 from system.models import DeviceType
 
-hub_manager = HubManger()
-db = hub_manager.db
 
+def get_db():
+    print('Hue DB called')
+    hub_manager = HubManger()
+    db = hub_manager.db
+    return db
 
 
 class BaseModel(Model):
     class Meta:
-        database = db
+        database = get_db()
 
 class HueBridge(BaseModel):
     username = CharField()
