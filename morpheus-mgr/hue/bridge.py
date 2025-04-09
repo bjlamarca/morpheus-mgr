@@ -24,8 +24,6 @@ class HueBridgeUtils():
         self.url_pre = 'https://' + self.ip_addr
         self.header = {"hue-application-key": self.username}
 
-        print('URL: ', self.url_pre, ' Header: ', self.header)
-
     def sync_device_types(self, signal_grp=None):
         hue_dev_types = HueDeviceTypes()
         msg_dict = {}
@@ -321,10 +319,8 @@ class HueDeviceTypes():
         return self.device_list
     
     def get_devtype_obj(self, model_id):
-        print('Model ID: ', model_id)
         for model in self.hue_model_type:
             if model_id == model[0]:
-                print('Device Type: ', model[1], ' : ', DeviceType.get_or_none(DeviceType.name == model[1]))
                 return DeviceType.get_or_none(DeviceType.name == model[1])
         return None
     

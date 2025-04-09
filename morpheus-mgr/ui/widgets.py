@@ -99,6 +99,8 @@ class LogViewer(QFrame):
             for index, logitem in enumerate(self.log):
                 if logitem['status'] == 'error':
                     row_color = QColor('red')
+                if logitem['status'] == 'warning':
+                    row_color = QColor('orange')
                 elif logitem['status'] == 'info':
                     row_color = QColor('aqua')
                 elif logitem['status'] == 'success':
@@ -198,6 +200,7 @@ class CircleIndicatorWidget(QWidget):
 
         # Draw the circle, centered in the widget
         diameter = min(self.width(), self.height())
+        diameter = diameter / 1.5
         painter.drawEllipse(self.width()/2 - diameter/2, self.height()/2 - diameter/2, diameter, diameter)
 
 

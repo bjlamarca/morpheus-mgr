@@ -7,7 +7,7 @@ from hue.models import update_tables
 if __name__ == "__main__":
     print('Starting Morpheus Manager...')
     connection = HubSocket()
-    connection.connect_socket()
+    connection.start_hub_connection()
        
     start_app()
     #update_tables()

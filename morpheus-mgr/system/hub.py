@@ -261,7 +261,6 @@ class HubSocket:
             msg_dict['message'] = 'Connecting to hub...' 
             signal.send(signal_grp, cls, msg_dict, True)
         try:
-            print('Trying.....')
             cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             cls.client.connect((cls.hub_host, cls.hub_port))
         except Exception as e:
@@ -337,7 +336,6 @@ class HubSocket:
             traceback.print_exc()
             logger.log('send', 'Error sending to hub.', str(e) + traceback.format_exc(), 'ERROR')
         
-
     def get_status(cls, signal_grp=None):
         signal = Signal()
         msg_dict = {}
@@ -349,6 +347,8 @@ class HubSocket:
 
     def keep_alive(cls):
         msg_dict = {}
+        strikes = 0
+        print('keep alive started')
         while True:
             try:
                 if cls.hub_connected == 'connected':
@@ -359,14 +359,35 @@ class HubSocket:
                     send_length += b' ' * (256 - len(send_length))
                     cls.client.send(send_length)
                     cls.client.send(msg)
+                    strikes = 0
+                    print('keep alive sent', strikes)
+                else:
+                    print('Hub not connected, not sending keep alive')    
+                time.sleep(5)
+
             except Exception as e:
-                cls.hub_connected = 'error'
+                time.sleep(5)
+                strikes += 1    
                 traceback.print_exc()
                 logger.log('keep_alive', 'Error sending keep alive to hub.', str(e) + traceback.format_exc(), 'ERROR')
                 msg_dict['area'] = 'system'
-                msg_dict['type'] = 'update'
-                msg_dict['item'] = 'hub_connect'
-                msg_dict['value'] = cls.hub_connected
+                msg_dict['type'] = 'message'
+                msg_dict['status'] = 'warning'
+                msg_dict['message'] = 'Error sending keep alive to hub, failed attemps: ' + str(strikes)  
+                 
                 signal = Signal()
                 signal.send('system', cls, msg_dict, True)
-                time.sleep(5)
+                if strikes > 5:
+                    result_dict = cls.connect_socket()
+                    if result_dict['status'] == 'error':
+                        print('Hub reconnect failed')
+                        break
+                    elif result_dict['status'] == 'success':
+                        print('Hub reconnect success')
+                        strikes = 0
+                 
+    def start_hub_connection(cls):
+        result_dict = cls.connect_socket()
+        print('start result_dict', result_dict)
+        thread = threading.Thread(target=cls.keep_alive, daemon=True)
+        thread.start()
