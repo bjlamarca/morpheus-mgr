@@ -54,10 +54,11 @@ class LogMsgBox(QFrame):
 
 
 
-class LogViewer(QFrame):
+class LogViewer(QGroupBox):
     def __init__(self):
         super().__init__()
         self.log = []
+        self.setTitle('Log Viewer')
         #self.setMinimumHeight(200)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
