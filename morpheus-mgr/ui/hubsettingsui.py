@@ -125,7 +125,6 @@ class HubSettingsMainWindow(QMainWindow):
         tab_grid_layout.addWidget(hub_list_grpbox, 1, 0, 1, 3)
         tab_grid_layout.addWidget(self.log_viewer, 2, 0, 1, 3)
                 
-        
         tab_V_layout = QVBoxLayout()
         tab_V_layout.addLayout(tab_grid_layout)
         tab_V_layout.addStretch()    
@@ -133,7 +132,6 @@ class HubSettingsMainWindow(QMainWindow):
         tab_H_layout = QHBoxLayout()
         tab_H_layout.addLayout(tab_V_layout)
         tab_H_layout.addStretch()
-
 
         #### Main window layout
         self.setWindowTitle("Hub Settings")
@@ -155,7 +153,7 @@ class HubSettingsMainWindow(QMainWindow):
         self.fill_hub_combos()
 
     def showEvent(self, event):
-        print('show event')
+        pass
 
     def receive_signals(self, sender, msg_dict):
         if msg_dict['area'] == 'system':

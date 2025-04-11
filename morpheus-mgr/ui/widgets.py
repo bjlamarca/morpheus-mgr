@@ -89,8 +89,6 @@ class LogViewer(QGroupBox):
             self.show()
         else:
             self.log.append(msg_dict.copy())
-            #print('log: ', self.log)
-        
             self.log_tbl.clear()
             self.log_tbl.verticalHeader().setVisible(False)
             self.log_tbl.horizontalHeader().setVisible(False)
@@ -131,7 +129,6 @@ class LogViewerGraphics(QGraphicsView):
 
     def update_text(self, text):
         self.text = text
-        print('Text: ', self.text)
         #pen = QPen(QColor("red"))
         # pen.setWidth(3)
         # self.line = self.scene.addLine(self.pos, 60, 70, 100, pen)

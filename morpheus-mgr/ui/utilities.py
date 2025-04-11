@@ -17,7 +17,6 @@ def get_pix_obj(icon):
 def load_stylesheet():
     qss_file = QFile(BASE_DIR + '\\files\\style\\Combinear.qss')
     if not qss_file.open(QFile.ReadOnly | QFile.Text):
-        print("Error opening QSS file")
         sys.exit(1)
     qss_stream = QTextStream(qss_file)
     qss_content = qss_stream.readAll()

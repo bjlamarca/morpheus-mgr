@@ -47,7 +47,6 @@ class HubManger:
             from system.models import Room
             test_qs = Room.select()
             count = test_qs.count()
-            print('test_qs', count)
         except Exception as e:
             traceback.print_exc()
             cls.db_conn_status = 'error'
@@ -273,7 +272,6 @@ class HubSocket:
 
     def connect_socket(cls, signal_grp=None):
         msg_dict = {}
-        print('Connecting to hub socket', signal_grp)
         if signal_grp:
             signal = Signal()
             msg_dict['area'] = 'system'
@@ -369,7 +367,6 @@ class HubSocket:
     def keep_alive(cls):
         msg_dict = {}
         strikes = 0
-        print('keep alive started')
         while True:
             try:
                 if cls.hub_connected == 'connected':
@@ -381,9 +378,8 @@ class HubSocket:
                     cls.client.send(send_length)
                     cls.client.send(msg)
                     strikes = 0
-                    print('keep alive sent', strikes)
                 else:
-                    print('Hub not connected, not sending keep alive')    
+                    pass    
                 time.sleep(5)
 
             except Exception as e:
@@ -401,14 +397,11 @@ class HubSocket:
                 if strikes > 5:
                     result_dict = cls.connect_socket()
                     if result_dict['status'] == 'error':
-                        print('Hub reconnect failed')
                         break
                     elif result_dict['status'] == 'success':
-                        print('Hub reconnect success')
                         strikes = 0
                  
     def start_hub_connection(cls):
         result_dict = cls.connect_socket()
-        print('start result_dict', result_dict)
         thread = threading.Thread(target=cls.keep_alive, daemon=True)
         thread.start()

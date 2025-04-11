@@ -31,9 +31,11 @@ class MainWindow(QMainWindow):
         system_menu.addAction(exit_action)
         
         interface_menu = QMenu("Interfaces", self)
-        hue_action = QAction("Hue", self)
+        hue_submenu = QMenu("Hue", self)
+        interface_menu.addMenu(hue_submenu)
+        hue_action = QAction("Hue Bridges", self)
         hue_action.triggered.connect(lambda: self.add_tab("huewin"))
-        interface_menu.addAction(hue_action)
+        hue_submenu.addAction(hue_action)
         
         menu_bar.addMenu(system_menu)
         menu_bar.addMenu(interface_menu)

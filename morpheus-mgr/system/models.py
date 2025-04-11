@@ -3,12 +3,9 @@ from system.hub import HubManger
 
 
 def get_db():
-    print('Hue DB called')
     hub_manager = HubManger()
     db = hub_manager.db
     return db
-
-
 
 class BaseModel(Model):
     class Meta:
@@ -20,7 +17,6 @@ class Room(BaseModel):
 
     def __str__(self):
         return self.name
-
 
 class DeviceType(BaseModel):
     name = CharField()
@@ -39,7 +35,6 @@ class Device(BaseModel):
     
     def __str__(self):
         return self.name
-
 
 class ColorFamily(BaseModel):
     name = CharField()
