@@ -9,26 +9,12 @@ from system.hub import HubManger, HubSocket
 from system.signals import Signal
 
 
-class SettingsMainWindow(QMainWindow):
+class HubSettingsMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Settings")
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        self.main_layout = QVBoxLayout(main_widget)
-        self.setLayout(self.main_layout)
+        
 
-        self.tab_widget = QTabWidget()
-        self.main_layout.addWidget(self.tab_widget)
 
-        self.hubs_tab = HubsTab()
-        self.general_tab = QWidget()
-        self.tab_widget.addTab(self.hubs_tab, "Hubs")
-        self.tab_widget.addTab(self.general_tab, "General")
-
-class HubsTab(QWidget):
-    def __init__(self):
-        super().__init__()
         signal = Signal()
         self.socket = HubSocket()
         self.hub_mgr = HubManger() 
@@ -148,8 +134,14 @@ class HubsTab(QWidget):
         tab_H_layout.addLayout(tab_V_layout)
         tab_H_layout.addStretch()
 
-        self.setLayout(tab_H_layout)
 
+        #### Main window layout
+        self.setWindowTitle("Hub Settings")
+        main_widget = QWidget()
+        self.setCentralWidget(main_widget)
+        self.main_layout = QVBoxLayout(main_widget)
+        self.main_layout.addLayout(tab_H_layout)
+        self.setLayout(self.main_layout)
         
         self.hub_msgbox.hide()
         #self.log_viewer.hide()
@@ -372,8 +364,4 @@ class HubAddEdit(QDialog):
             self.msg_label.setText(responce['message'])
             self.msg_label.setStyleSheet("color: red")
         
-class GeneralTab(QWidget):
-    def __init__(self):
-        super().__init__()
-        general_tab_layout = QVBoxLayout()
-        self.setLayout(self.general_tab_layout)
+

@@ -6,7 +6,7 @@ from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtCore import Qt
 
 from ui.hueui import HueMainWindow
-from ui.settingsui import SettingsMainWindow
+from ui.hubsettingsui import HubSettingsMainWindow
 from ui.utilities import load_stylesheet, get_icon_obj
 from system.signals import Signal
 
@@ -23,8 +23,8 @@ class MainWindow(QMainWindow):
         menu_bar = self.menuBar()
         
         system_menu = QMenu("System", self)
-        settings_action = QAction("Settings", self)
-        settings_action.triggered.connect(lambda: self.add_tab("settings"))
+        settings_action = QAction("Hub Settings", self)
+        settings_action.triggered.connect(lambda: self.add_tab("hub_settings"))
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.close)
         system_menu.addAction(settings_action)
@@ -45,8 +45,8 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        #self.add_tab("huewin")
-        self.add_tab("settings")
+        self.add_tab("huewin")
+        self.add_tab("hub_settings")
         
     
     def close_tab(self, index):
@@ -56,9 +56,9 @@ class MainWindow(QMainWindow):
         event.accept
 
     def add_tab(self, name):
-        if name == "settings":
-            settings_win = SettingsMainWindow()
-            self.tab_widget.addTab(settings_win, "Settings")
+        if name == "hub_settings":
+            settings_win = HubSettingsMainWindow()
+            self.tab_widget.addTab(settings_win, "Hub Settings")
             self.tab_widget.setCurrentWidget(settings_win)
         if name == "huewin":
             hue_win = HueMainWindow()
