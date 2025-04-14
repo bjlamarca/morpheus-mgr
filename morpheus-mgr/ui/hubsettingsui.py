@@ -12,9 +12,6 @@ from system.signals import Signal
 class HubSettingsMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        
-
-
         signal = Signal()
         self.socket = HubSocket()
         self.hub_mgr = HubManger() 
@@ -59,8 +56,6 @@ class HubSettingsMainWindow(QMainWindow):
 
         #### Hub list group box
         hub_list_grpbox = QGroupBox('Hubs')
-        
-         
         list_btn_layout = QGridLayout()
         btn_add_hub = QPushButton('Add hub')
         btn_add_hub.clicked.connect(self.add_hub)
@@ -74,8 +69,6 @@ class HubSettingsMainWindow(QMainWindow):
         list_btn_layout.addWidget(btn_add_hub, 0, 0, 1, 1)
         list_btn_layout.addWidget(btn_edit_hub, 0, 1, 1, 1)
         list_btn_layout.addWidget(btn_del_hub, 0, 2, 1, 1)
-        
-        
         
         hub_msgbox_layout = QHBoxLayout()
         self.hub_msgbox = YesNoBox()
@@ -91,8 +84,6 @@ class HubSettingsMainWindow(QMainWindow):
         #self.hub_table.setMinimumHeight(400)
         hub_tbl_layout.addWidget(self.hub_table)
         hub_tbl_layout.addStretch()
-
-        
         
         hub_msg_layout = QHBoxLayout()
         self.msg_label = QLabel('')
@@ -113,27 +104,24 @@ class HubSettingsMainWindow(QMainWindow):
         msg_layout.addWidget(self.msg_label)
         msg_layout.addStretch()
         
-        
+        #### Log viewer
         log_layout = QHBoxLayout()
         self.log_viewer = LogViewer()
         log_layout.addWidget(self.log_viewer)
         log_layout.addStretch()
         
-
+        #### Main window layout
         tab_grid_layout = QGridLayout()
         tab_grid_layout.addWidget(connect_grpbox, 0, 0, 1, 1)
         tab_grid_layout.addWidget(hub_list_grpbox, 1, 0, 1, 3)
         tab_grid_layout.addWidget(self.log_viewer, 2, 0, 1, 3)
-                
         tab_V_layout = QVBoxLayout()
         tab_V_layout.addLayout(tab_grid_layout)
         tab_V_layout.addStretch()    
-
         tab_H_layout = QHBoxLayout()
         tab_H_layout.addLayout(tab_V_layout)
         tab_H_layout.addStretch()
 
-        #### Main window layout
         self.setWindowTitle("Hub Settings")
         main_widget = QWidget()
         self.setCentralWidget(main_widget)

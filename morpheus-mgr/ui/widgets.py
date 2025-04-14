@@ -52,37 +52,24 @@ class LogMsgBox(QFrame):
     def msg_update(self, sender, msg):
         self.txt_edit.setText(str(msg))
 
-
-
 class LogViewer(QGroupBox):
     def __init__(self):
         super().__init__()
         self.log = []
         self.setTitle('Log Viewer')
-        #self.setMinimumHeight(200)
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
-
+        main_layout = QVBoxLayout() 
         log_tbl_layout = QHBoxLayout()
         self.log_tbl = QTableWidget()
-        #self.log_tbl.setMinimumWidth(200)
-        #self.log_tbl.setMinimumHeight(400)
         log_tbl_layout.addWidget(self.log_tbl)
-        log_tbl_layout.addStretch()
-        
         btn_layout = QHBoxLayout()
         btn_close = QPushButton('Close')
         btn_close.clicked.connect(self.hide)
         btn_layout.addWidget(btn_close)
-        btn_layout.addStretch()
-
-        self.layout.addLayout(log_tbl_layout)
-        self.layout.addLayout(btn_layout)
-        self.layout.addStretch()
+        main_layout.addLayout(log_tbl_layout)
+        main_layout.addLayout(btn_layout)
+        self.setLayout(main_layout)
 
     def update_log(self, msg_dict):
-        print('LogViewer: ', msg_dict)
         if msg_dict['status'] == 'clear':
             self.log = []
             self.log_tbl.clear()
@@ -139,7 +126,6 @@ class LogViewerGraphics(QGraphicsView):
         self.update()
         self.pos += 20
     
-
 class YesNoBox(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -155,8 +141,6 @@ class YesNoBox(QGroupBox):
         btn_layout.addWidget(btn_yes)
         btn_layout.addWidget(btn_no)
         layout.addLayout(btn_layout)
-        
-        
         layout.addStretch()
         self.setLayout(layout)
 

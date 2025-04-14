@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
 from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtCore import Qt
 
-from ui.hueui import HueMainWindow
+from ui.hueui import HueDeviceAllWindow
 from ui.hubsettingsui import HubSettingsMainWindow
 from ui.utilities import load_stylesheet, get_icon_obj
 from system.signals import Signal
@@ -33,8 +33,8 @@ class MainWindow(QMainWindow):
         interface_menu = QMenu("Interfaces", self)
         hue_submenu = QMenu("Hue", self)
         interface_menu.addMenu(hue_submenu)
-        hue_action = QAction("Hue Bridges", self)
-        hue_action.triggered.connect(lambda: self.add_tab("huewin"))
+        hue_action = QAction("Devices", self)
+        hue_action.triggered.connect(lambda: self.add_tab("huedevices"))
         hue_submenu.addAction(hue_action)
         
         menu_bar.addMenu(system_menu)
@@ -47,8 +47,8 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        self.add_tab("huewin")
-        self.add_tab("hub_settings")
+        #self.add_tab("huewin")
+        #self.add_tab("hub_settings")
         
     
     def close_tab(self, index):
@@ -62,10 +62,10 @@ class MainWindow(QMainWindow):
             settings_win = HubSettingsMainWindow()
             self.tab_widget.addTab(settings_win, "Hub Settings")
             self.tab_widget.setCurrentWidget(settings_win)
-        if name == "huewin":
-            hue_win = HueMainWindow()
-            self.tab_widget.addTab(hue_win, "Hue")
-            self.tab_widget.setCurrentWidget(hue_win)
+        if name == "huedevices":
+            hue_dev_all_win = HueDeviceAllWindow()
+            self.tab_widget.addTab(hue_dev_all_win, "Hue - Devices")
+            self.tab_widget.setCurrentWidget(hue_dev_all_win)
 
 
     def connect_websocket(self):

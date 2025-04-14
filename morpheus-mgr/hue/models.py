@@ -6,7 +6,6 @@ from system.models import DeviceType
 
 
 def get_db():
-    print('Hue DB called')
     hub_manager = HubManger()
     db = hub_manager.db
     return db
@@ -74,6 +73,7 @@ class HueButton(BaseModel):
     
 
 def update_tables():
+    db = get_db()
     db.connect()
     db.create_tables([HueBridge, HueDevice, HueLight, HueButton])
     print('Hue tables created')

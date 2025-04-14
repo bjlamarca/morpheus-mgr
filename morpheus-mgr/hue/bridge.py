@@ -27,12 +27,14 @@ class HueBridgeUtils():
     def sync_device_types(self, signal_grp=None):
         hue_dev_types = HueDeviceTypes()
         msg_dict = {}
+        signal = Signal()
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
+        msg_dict['status'] = 'clear'
+        signal.send(signal_grp, 'sync_device_types', msg_dict, True)
+        msg_dict['status'] = 'info'
+        msg_dict['message'] = 'Syncing device types'
         if signal_grp:
-            signal = Signal()
-            msg_dict['status'] = 'clear'
-            signal.send(signal_grp, 'sync_device_types', msg_dict, True)
-            msg_dict['status'] = 'info'
-            msg_dict['message'] = 'Syncing device types'
             signal.send(signal_grp, 'sync_device_types', msg_dict, True)
         try:
             device_list = hue_dev_types.get_device_list()
@@ -77,13 +79,14 @@ class HueBridgeUtils():
     def sync_bridge_thread(self, bridge_id, signal_grp=None):
         try:
                 hue_dev_types = HueDeviceTypes()
-                msg_dict = {'status': '', 'message': ''}
+                msg_dict = {}
+                signal = Signal()
+                msg_dict['area'] = 'system'
+                msg_dict['type'] = 'message' 
+                msg_dict['status'] = 'clear'
+                msg_dict['status'] = 'info'
+                msg_dict['message'] = 'Syncing Hue Devices'
                 if signal_grp:
-                    signal = Signal() 
-                    msg_dict['status'] = 'clear'
-                    signal.send(signal_grp, 'sync_bridge', msg_dict, True)
-                    msg_dict['status'] = 'info'
-                    msg_dict['message'] = 'Syncing Hue Devices'
                     signal.send(signal_grp, 'sync_bridge', msg_dict, True)
                 self.bridge_id = bridge_id
                 self.set_url(self.bridge_id)
@@ -95,9 +98,9 @@ class HueBridgeUtils():
                         device_obj.name = device['metadata']['name']
                         device_obj.software_version = device['product_data']['software_version']
                         device_obj.save()
+                        msg_dict['status'] = 'info'
+                        msg_dict['message'] = 'Device Updated: ' + device_obj.name
                         if signal_grp:
-                            msg_dict['status'] = 'info'
-                            msg_dict['message'] = 'Device Updated: ' + device_obj.name
                             signal.send(signal_grp, 'sync_bridge', msg_dict, True)
                     else:
                         #create parent device
@@ -163,21 +166,21 @@ class HueBridgeUtils():
                                     new_device.bridge_rid = service_dict['rid']
                                     new_device.save()
 
+                        msg_dict['status'] = 'info'
+                        msg_dict['message'] = 'Device Added: ' + new_device.name
                         if signal_grp:
-                            msg_dict['status'] = 'info'
-                            msg_dict['message'] = 'Device Added: ' + new_device.name
                             signal.send(signal_grp, 'sync_bridge', msg_dict, True)
                         else:
+                            msg_dict['status'] = 'error'
+                            msg_dict['message'] = 'Item type not found, not added to DB' + device['product_data']['model_id']
                             if signal_grp:
-                                msg_dict['status'] = 'error'
-                                msg_dict['message'] = 'Item type not found, not added to DB' + device['product_data']['model_id']
                                 signal.send(signal_grp, 'sync_bridge', msg_dict, True)
                             logger.log('sync_device_db','Sync Databse: Item type not found, not added to DB', 'Hue Type: ' + device['product_data']['model_id'], 'ERROR')
                 
                 #remove devices that are no longer in the hub
+                msg_dict['status'] = 'info'
+                msg_dict['message'] = 'Checking for devices not in hub to remove'
                 if signal_grp:
-                    msg_dict['status'] = 'info'
-                    msg_dict['message'] = 'Checking for devices not in hub to remove'
                     signal.send(signal_grp, 'sync_bridge', msg_dict, True)
                 devices = HueDevice.select().where(HueDevice.morph_sync==True)
                 for device in devices:
@@ -195,17 +198,17 @@ class HueBridgeUtils():
                 
 
                 logger.log('sync_device_db','Sync Databse: Completed', 'Completed succesfully', 'INFO')
+                msg_dict['status'] = 'success'
+                msg_dict['message'] = 'Syncing Hue Devices completed successfully'
                 if signal_grp:
-                    msg_dict['status'] = 'success'
-                    msg_dict['message'] = 'Syncing Hue Devices completed successfully'
                     signal.send(signal_grp, 'sync_bridge', msg_dict, True)
         
         except Exception as error:
             traceback.print_exc()
             logger.log('sync_device_db','Syncing Hue Databse failed', str(error), 'ERROR')
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Syncing Hue Devices failed. ' + str(error)
             if signal_grp:
-                    msg_dict['status'] = 'error'
-                    msg_dict['message'] = 'Syncing Hue Devices failed. ' + str(error)
                     signal.send(signal_grp, 'sync_bridge', msg_dict, True)
             
 

@@ -1,10 +1,9 @@
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLabel,
                                QPushButton, QTableWidget, QAbstractItemView, QTableWidgetItem, QComboBox, QDialog,
-                               QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout)
+                               QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout, QGridLayout,
+                               QHeaderView)
 from PySide6.QtGui import Qt
-
-
 from ui.utilities import get_icon_obj
 from hue.models import HueBridge, HueDevice, HueButton, HueLight
 from hue.utilities import HueUtilities
@@ -14,46 +13,77 @@ from system.signals import Signal
 
 
 
-class HueMainWindow(QMainWindow):
+class HueDeviceAllWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Philips Hue")
+        signal = Signal()
+        
+        #### Device Table
+        dev_tbl_grpbox = QGroupBox()
+        self.device_table = QTableWidget()
+        dev_tbl_layout = QVBoxLayout(dev_tbl_grpbox)
+        dev_tbl_layout.addWidget(self.device_table)
+        dev_tbl_grpbox.setLayout(dev_tbl_layout)
+
+        #### Sync functions
+        sync_grpbox = QGroupBox()
+        sync_grid_layout = QGridLayout()
+        btn_sync_device_types = QPushButton('Sync Device Types')
+        sync_lbl = QLabel('Sync Bridge')
+        self.bridge_combo = QComboBox()
+        btn_sync_device_types.clicked.connect(self.sync_device_types)
+        btn_sync_bridge = QPushButton()
+        btn_sync_bridge.setIcon(get_icon_obj('sync'))
+        btn_sync_bridge.setMaximumWidth(25)
+
+        btn_sync_bridge.clicked.connect(self.sync_bridge)
+        sync_grid_layout.addWidget(btn_sync_device_types, 0, 0, 1, 3)
+        sync_grid_layout.addWidget(sync_lbl, 1, 0, 1, 1)
+        sync_grid_layout.addWidget(self.bridge_combo, 1, 1, 1, 1)
+        sync_grid_layout.addWidget(btn_sync_bridge, 1, 2, 1, 1)
+        sync_grpbox.setLayout(sync_grid_layout)
+
+        #### Log viewer
+        log_layout = QHBoxLayout()
+        self.log_viewer = LogViewer()
+        log_layout.addWidget(self.log_viewer)
+        log_layout.addStretch()
+
+        #### Main window
+        grid_layout = QGridLayout()
+        grid_layout.addWidget(dev_tbl_grpbox, 0, 0, 1, 2)
+        grid_layout.addWidget(sync_grpbox, 1, 0, 1, 1)
+        grid_layout.addLayout(log_layout, 0, 2, 1, 2)
+
+        V_layout = QVBoxLayout()
+        V_layout.addLayout(grid_layout)
+        
+        H_layout = QHBoxLayout()
+        H_layout.addLayout(V_layout)
+        H_layout.addStretch()
+
+        self.setWindowTitle("Devices")
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
-        self.layout = QVBoxLayout(main_widget)
-
-        self.tab_widget = QTabWidget()
-        self.tab_manuf = QWidget()
+        self.main_layout = QVBoxLayout(main_widget)
+        self.main_layout.addLayout(H_layout)
         
-        device_tab_widget = DeviceTab()
-        general_tab_widget = GeneralTab()
-        bridge_tab_widget = BridgeTab()
-
-        self.tab_widget.addTab(device_tab_widget, "Devices")
-        self.tab_widget.addTab(general_tab_widget, "General")
-        self.tab_widget.addTab(bridge_tab_widget, "Bridges")
-        self.layout.addWidget(self.tab_widget)
-        self.layout.addStretch()
-
-class DeviceTab(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.tab_device_layout = QVBoxLayout()
-        self.setLayout(self.tab_device_layout)
-        
-        device_tbl_layout = QHBoxLayout()
-        self.device_table = QTableWidget()
-        self.device_table.setMinimumWidth(450)
-        device_tbl_layout.addWidget(self.device_table)
-        device_tbl_layout.addStretch()                
- 
-        self.tab_device_layout.addLayout(device_tbl_layout)
-    
-    def showEvent(self, event):
+        self.setLayout(self.main_layout)
         self.fill_device_table()
+        self.fill_bridge_combo()
+        
+        signal.connect('hue_ui', self.receive_signals)
+        signal.connect('system', self.receive_signals)
+
+    def showEvent(self, event):
+        pass
         
     def fill_device_table(self):
         self.device_table.clear()
+        dev_tbl_header = self.device_table.horizontalHeader()
+        dev_tbl_header.setStretchLastSection(True)
+        dev_tbl_header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.device_table.setMinimumWidth(450)
         self.device_table.setColumnCount(4)
         self.device_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.device_table.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -67,6 +97,27 @@ class DeviceTab(QWidget):
             self.device_table.setItem(index, 1, QTableWidgetItem(device.device_type.display_name))
             self.device_table.setItem(index, 2, QTableWidgetItem(str(device.online)))
 
+    def fill_bridge_combo(self):
+        self.bridge_combo.clear()
+        self.bridge_combo.addItem('Select Bridge', 0)
+        bridge_qs = HueBridge.select()
+        for bridge in bridge_qs:
+            self.bridge_combo.addItem(bridge.name, bridge.id)
+
+
+    def sync_device_types(self):
+        hue_bridge = HueBridgeUtils()
+        responce = hue_bridge.sync_device_types('hue_ui')
+
+    def sync_bridge(self):
+        bridge_id = self.bridge_combo.currentData()
+        if bridge_id > 0:            
+            hue_bridge = HueBridgeUtils()
+            responce = hue_bridge.sync_bridge(bridge_id, 'hue_ui')
+
+    def receive_signals(self, sender, msg_dict):
+        self.log_viewer.update_log(msg_dict)
+    
 class GeneralTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -76,8 +127,8 @@ class GeneralTab(QWidget):
         horz_layout = QHBoxLayout()
 
         btn_grpbox = QGroupBox()
-        bridge_Vlayout = QVBoxLayout()
         
+        bridge_Vlayout = QVBoxLayout()
         btn_layout = QHBoxLayout()
         btn_sync_device_types = QPushButton('Sync Device Types')
         btn_sync_device_types.clicked.connect(self.sync_device_types)
@@ -106,7 +157,6 @@ class GeneralTab(QWidget):
         log_layout.addWidget(self.log_viewer)
         log_layout.addStretch()
         
-
         self.tab_general_layout.addLayout(horz_layout)
         self.tab_general_layout.addLayout(log_layout)
         self.tab_general_layout.addStretch()

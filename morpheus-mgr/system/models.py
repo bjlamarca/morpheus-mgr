@@ -67,6 +67,7 @@ class SystemLog(BaseModel):
     level = CharField(null=True)    
 
 def update_db():
+    db = get_db()
     db.connect()
     db.create_tables([Room, DeviceType, Device, ColorFamily, Color, ColorColorFamily, SystemLog])
     db.close()
