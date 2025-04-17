@@ -1,56 +1,63 @@
+import time, threading
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QFrame,
                              QGroupBox, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QTableWidget, 
-                             QTableWidgetItem, QCheckBox)
-from PySide6.QtGui import Qt, QPainter, QColor, QBrush, QFont, QPixmap, QPen
+                             QTableWidgetItem, QCheckBox, QTextEdit)
+from PySide6.QtGui import Qt, QPainter, QColor, QBrush, QFont, QPixmap, QPen, QPalette
 from PySide6.QtCore import QRect
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from system.signals import Signal
 
 
 
-class LogMsgBox(QFrame):
+class StatusBar(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
-        signal = Signal()
-        
-        self.html_list = []
+        self.msg_num = 1
+        #signal = Signal()
         self.setMinimumHeight(150)
-        layout = QVBoxLayout()
-        
-        txt_layout = QHBoxLayout()
-        self.txt_edit = QLineEdit()
-        self.txt_edit.setReadOnly(True)
-        self.txt_edit.setStyleSheet("background-color: black;")
-        txt_layout.addWidget(self.txt_edit)
-        
-        btn_layout = QHBoxLayout()
-        btn_close = QPushButton('Close')
-        btn_close.clicked.connect(self.hide)
-        btn_layout.addWidget(btn_close)
-        btn_layout.addStretch()
-        
-        
-        layout.addLayout(txt_layout)
-        layout.addLayout(btn_layout)
-        
-        self.setLayout(layout)
+        self.msg_lbl = QLabel()
+        self.msg_id_lbl = QLabel()
+        V_layout = QVBoxLayout()
+        H_layout = QHBoxLayout()
+        H_layout.addWidget(self.msg_lbl)
+        V_layout.addStretch()
+        V_layout.addLayout(H_layout)
+        self.setLayout(V_layout)
         #signal.connect('hue_mgr', self.msg_update)
 
-    def set_msg(self, msg_dict):
-        if msg_dict['status'] == 'clear':
-            self.txt_edit.clear()
-        if msg_dict['status'] == 'error':
-            self.html_list.append('<li style="color:red;">' + msg_dict['message'] + '</li>')
-        elif msg_dict['status'] == 'info':
-            self.html_list.append('<li style="color:aqua;">' + msg_dict['message'] + '</li>')
-        elif msg_dict['status'] == 'success':
-            self.html_list.append('<li style="color:lawngreen;">' + msg_dict['message'] + '</li>')
-        
-        html = '<ul style="list-style-type:none;">' + ''.join(self.html_list) + '</ul>'
-        self.txt_edit.setText(html)
+    def set_msg(self, msg_dict, clear_time=10):
+        self.clear_time = clear_time
+        self.msg_num = self.msg_num + 1
+        self.msg_id_lbl.setText(str(self.msg_num))
+        if msg_dict['type'] == 'message':
+            if msg_dict['status'] == 'clear':
+                self.msg_lbl.clear()
+            if msg_dict['status'] == 'error':
+                text_color = 'red'
+            elif msg_dict['status'] == 'info':
+                text_color = 'aqua'
+            elif msg_dict['status'] == 'success':
+                text_color = 'lawngreen'
+            elif msg_dict['status'] == 'warning':
+                text_color = 'orange'
+            else:
+               text_color = 'white'
+           
+        self.msg_lbl.setStyleSheet("QLabel { color : " + text_color + "; }")
+        self.msg_lbl.setText(str(msg_dict['message']))
+        if self.clear_time > 0:
+            thread = threading.Thread(target=self.clear_msg)
+            thread.daemon = True
+            thread.start()
 
     def msg_update(self, sender, msg):
-        self.txt_edit.setText(str(msg))
+        self.msg_lbl.setText(str(msg))
+
+    def clear_msg(self):
+        time.sleep(self.clear_time)
+        if self.msg_id_lbl.text() == str(self.msg_num):
+            self.msg_lbl.clear()
+            self.msg_id_lbl.clear()
 
 class LogViewer(QGroupBox):
     def __init__(self):
@@ -99,34 +106,7 @@ class LogViewer(QGroupBox):
                 self.log_tbl.setItem(index, 0, tbl_item)
             self.show()
             
-
-class LogViewerGraphics(QGraphicsView):
-    def __init__(self):
-        super().__init__()
-        self.pos = 20
-        self.text = "Hello, I am Morpheus!"
-        self.scene = QGraphicsScene(self)
-        self.setScene(self.scene)
-
-        # Create a line
-        
-        text_item = QGraphicsTextItem(self.text)
-        text_item.setPos(-10, 10)
-        self.scene.addItem(text_item)
-
-    def update_text(self, text):
-        self.text = text
-        #pen = QPen(QColor("red"))
-        # pen.setWidth(3)
-        # self.line = self.scene.addLine(self.pos, 60, 70, 100, pen)
-        text_item = QGraphicsTextItem(self.text)
-        text_item.setPos(-10, self.pos)
-        self.scene.addItem(text_item)
-        
-        self.update()
-        self.pos += 20
-    
-class YesNoBox(QGroupBox):
+class ChoiceBox(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedHeight(100)
@@ -190,3 +170,28 @@ class CircleIndicatorWidget(QWidget):
         self.color = color
         self.update()
 
+class LogViewerGraphics(QGraphicsView):
+    def __init__(self):
+        super().__init__()
+        self.pos = 20
+        self.text = "Hello, I am Morpheus!"
+        self.scene = QGraphicsScene(self)
+        self.setScene(self.scene)
+
+        # Create a line
+        
+        text_item = QGraphicsTextItem(self.text)
+        text_item.setPos(-10, 10)
+        self.scene.addItem(text_item)
+
+    def update_text(self, text):
+        self.text = text
+        #pen = QPen(QColor("red"))
+        # pen.setWidth(3)
+        # self.line = self.scene.addLine(self.pos, 60, 70, 100, pen)
+        text_item = QGraphicsTextItem(self.text)
+        text_item.setPos(-10, self.pos)
+        self.scene.addItem(text_item)
+        
+        self.update()
+        self.pos += 20

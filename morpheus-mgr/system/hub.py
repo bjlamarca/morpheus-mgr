@@ -121,24 +121,54 @@ class HubManger:
                 return hub
             
     def set_current_hub(cls, hub_id):
-        f = open(BASE_DIR + '/settings.json', 'r')
-        settings = json.load(f)
-        settings['current_hub_id'] = hub_id
-        f = open(BASE_DIR + '/settings.json', 'w')
-        f.write(json.dumps(settings, indent=4))
-        f.close()
+        msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
+        try: 
+            f = open(BASE_DIR + '/settings.json', 'r')
+            settings = json.load(f)
+            settings['current_hub_id'] = hub_id
+            f = open(BASE_DIR + '/settings.json', 'w')
+            f.write(json.dumps(settings, indent=4))
+            f.close()
+        except Exception as e:
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error setting Hub.'
+            logger.log('set_current_hub', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
+            return msg_dict
+        else:
+            msg_dict['status'] = 'success'
+            msg_dict['message'] = 'Hub set.  Please restart Morpheus.'
+            logger.log('set_current_hub', 'Hub set.  Please restart Morpheus.', 'Database hub: ' + str(hub_id), 'INFO')
+            return msg_dict
             
     def get_current_db_hub(cls):
-        f = open(BASE_DIR + '/settings.json', 'r')
-        settings = json.load(f)
-        current_db_hub = settings['current_db_hub_id']
-        hub_list = settings['hub_list']
-        for hub in hub_list:
-            if hub['id'] == current_db_hub:
-                return hub
+        msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
+        try: 
+            f = open(BASE_DIR + '/settings.json', 'r')
+            settings = json.load(f)
+            current_db_hub = settings['current_db_hub_id']
+            hub_list = settings['hub_list']
+            for hub in hub_list:
+                if hub['id'] == current_db_hub:
+                    return hub
+        except Exception as e:
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error setting Hub.'
+            logger.log('set_current_hub', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR') 
+            return msg_dict
+        else:
+            msg_dict['status'] = 'success'
+            msg_dict['message'] = 'Hub set.  Please restart Morpheus.'
+            logger.log('set_current_hub', 'Hub set.  Please restart Morpheus.', 'Database hub: ' + str(hub_id), 'INFO')
+            return msg_dict
             
     def set_current_db_hub(cls, hub_id):
         msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
         try: 
             f = open(BASE_DIR + '/settings.json', 'r')
             settings = json.load(f)
@@ -159,6 +189,8 @@ class HubManger:
 
     def add_hub(cls, name, ip_addr):
         msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
         try:
             if name == '' or ip_addr == '':
                 msg_dict['status'] = 'error'
@@ -198,6 +230,8 @@ class HubManger:
 
     def edit_hub(cls, name, ip_addr, hub_id):
         msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
         try:
             if name == '' or ip_addr == '':
                 msg_dict['status'] = 'error'
@@ -231,6 +265,8 @@ class HubManger:
 
     def delete_hub(cls, hub_id):
         msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['type'] = 'message'
         try:
             hub_list = cls.get_hub_list()
             for hub in hub_list:

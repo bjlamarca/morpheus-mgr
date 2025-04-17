@@ -13,7 +13,6 @@ class HueBridgeUtils():
     def __init__(self):
         pass
 
-
     def set_url(self, bridge_id):
         bridge = HueBridge.get(HueBridge.id == bridge_id)
         self.username = bridge.username
@@ -211,7 +210,6 @@ class HueBridgeUtils():
             if signal_grp:
                     signal.send(signal_grp, 'sync_bridge', msg_dict, True)
             
-
     def get_items(self, item):
         if item == 'lights':
             url = self.url_pre + '/clip/v2/resource/light'
@@ -223,7 +221,6 @@ class HueBridgeUtils():
             url = self.url_pre + '/clip/v2/resource/zigbee_connectivity'
         elif item == 'power':
             url = self.url_pre + '/clip/v2/resource/device_power'
-        
         else:
             logger.log('get_items', 'Not vaild Item(s)', url,  'ERROR')
             return None
@@ -326,4 +323,8 @@ class HueDeviceTypes():
             if model_id == model[0]:
                 return DeviceType.get_or_none(DeviceType.name == model[1])
         return None
+    
+
+
+    
     

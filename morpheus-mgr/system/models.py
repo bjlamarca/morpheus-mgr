@@ -11,9 +11,16 @@ class BaseModel(Model):
     class Meta:
         database = get_db()
 
+class Hub(BaseModel):
+    name = CharField()
+    ip_addr = CharField()
+    is_local_hub = BooleanField()
+
+    def __str__(self):
+        return self.name
 
 class Room(BaseModel):
-    name =CharField()
+    name = CharField()
 
     def __str__(self):
         return self.name
@@ -66,10 +73,10 @@ class SystemLog(BaseModel):
     details = CharField(null=True)
     level = CharField(null=True)    
 
-def update_db():
+def update_tables():
     db = get_db()
     db.connect()
-    db.create_tables([Room, DeviceType, Device, ColorFamily, Color, ColorColorFamily, SystemLog])
+    db.create_tables([Hub, Room, DeviceType, Device, ColorFamily, Color, ColorColorFamily, SystemLog])
     db.close()
-    print('Database connection successful')
+    print('System tables updated')
     return True

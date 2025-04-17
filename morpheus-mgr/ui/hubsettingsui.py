@@ -3,7 +3,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QLineEdit, QCheckBox, QFrame, QMessageBox, QGroupBox, QFormLayout, QHeaderView)
 from PySide6.QtGui import Qt
 
-from ui.widgets import YesNoBox, LogViewer, CircleIndicatorWidget
+from ui.widgets import ChoiceBox, LogViewer, CircleIndicatorWidget, StatusBar
 from ui.utilities import get_icon_obj
 from system.hub import HubManger, HubSocket
 from system.signals import Signal
@@ -51,7 +51,11 @@ class HubSettingsMainWindow(QMainWindow):
         connect_grid_layout.addWidget(btn_connect_hub, 2, 0, 1, 3)
         connect_grid_layout.addWidget(btn_disconnect_hub, 3, 0, 1, 3)
         connect_grid_layout.addWidget(btn_test_hub, 4, 0, 1, 3)
-        connect_grpbox.setLayout(connect_grid_layout)
+        
+        connect_V_layout = QVBoxLayout()
+        connect_V_layout.addLayout(connect_grid_layout)
+        connect_V_layout.addStretch()
+        connect_grpbox.setLayout(connect_V_layout)
         #### End Connect group box
 
         #### Hub list group box
@@ -70,10 +74,10 @@ class HubSettingsMainWindow(QMainWindow):
         list_btn_layout.addWidget(btn_edit_hub, 0, 1, 1, 1)
         list_btn_layout.addWidget(btn_del_hub, 0, 2, 1, 1)
         
-        hub_msgbox_layout = QHBoxLayout()
-        self.hub_msgbox = YesNoBox()
-        hub_msgbox_layout.addWidget(self.hub_msgbox)
-        hub_msgbox_layout.addStretch()
+        hub_choicebox_layout = QHBoxLayout()
+        self.hub_choicebox = ChoiceBox()
+        hub_choicebox_layout.addWidget(self.hub_choicebox)
+        hub_choicebox_layout.addStretch()
         
         hub_tbl_layout = QHBoxLayout()
         self.hub_table = QTableWidget()
@@ -81,43 +85,34 @@ class HubSettingsMainWindow(QMainWindow):
         hub_tbl_header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # Allows manual resizing
         hub_tbl_header.setStretchLastSection(True) # Last section stretches to fill space
         self.hub_table.setMinimumWidth(375)
-        #self.hub_table.setMinimumHeight(400)
         hub_tbl_layout.addWidget(self.hub_table)
         hub_tbl_layout.addStretch()
         
-        hub_msg_layout = QHBoxLayout()
-        self.msg_label = QLabel('')
-        hub_msg_layout.addWidget(self.msg_label)
-        hub_msg_layout.addStretch()
-        
         hub_list_layout = QVBoxLayout()
         hub_list_layout.addLayout(list_btn_layout)
-        hub_list_layout.addLayout(hub_msgbox_layout)
+        hub_list_layout.addLayout(hub_choicebox_layout)
         hub_list_layout.addLayout(hub_tbl_layout)    
         
         hub_list_grpbox.setLayout(hub_list_layout)
 
-        #### End Hub list group box
-
-        msg_layout = QHBoxLayout()
-        self.msg_label = QLabel('')
-        msg_layout.addWidget(self.msg_label)
-        msg_layout.addStretch()
-        
         #### Log viewer
         log_layout = QHBoxLayout()
         self.log_viewer = LogViewer()
         log_layout.addWidget(self.log_viewer)
         log_layout.addStretch()
-        
+
+        #### Status bar
+        self.status_bar = StatusBar()
+                
         #### Main window layout
         tab_grid_layout = QGridLayout()
         tab_grid_layout.addWidget(connect_grpbox, 0, 0, 1, 1)
         tab_grid_layout.addWidget(hub_list_grpbox, 1, 0, 1, 3)
-        tab_grid_layout.addWidget(self.log_viewer, 2, 0, 1, 3)
+        tab_grid_layout.addWidget(self.log_viewer, 0, 1, 1, 1)
         tab_V_layout = QVBoxLayout()
         tab_V_layout.addLayout(tab_grid_layout)
-        tab_V_layout.addStretch()    
+        tab_V_layout.addStretch()
+        tab_V_layout.addWidget(self.status_bar)    
         tab_H_layout = QHBoxLayout()
         tab_H_layout.addLayout(tab_V_layout)
         tab_H_layout.addStretch()
@@ -129,7 +124,7 @@ class HubSettingsMainWindow(QMainWindow):
         self.main_layout.addLayout(tab_H_layout)
         self.setLayout(self.main_layout)
         
-        self.hub_msgbox.hide()
+        self.hub_choicebox.hide()
         #self.log_viewer.hide()
         
         signal.connect('hub_mgr_ui', self.receive_signals)
@@ -139,6 +134,7 @@ class HubSettingsMainWindow(QMainWindow):
         
         self.fill_hub_table()
         self.fill_hub_combos()
+        self.status_bar.set_msg({'type': 'message','status': 'succes', 'message': 'Ready'}, 4)
 
     def showEvent(self, event):
         pass
@@ -219,11 +215,7 @@ class HubSettingsMainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             hub_id = self.hub_combo.currentData()
             result_dict = self.hub_mgr.set_current_hub(hub_id)
-            self.msg_label.setText(result_dict['message'])
-            if result_dict['status'] == 'error':
-                self.msg_label.setStyleSheet('color: red')
-            elif result_dict['status'] == 'success':
-                self.msg_label.setStyleSheet('color: green')
+            self.status_bar.set_msg(result_dict)
         else:
             self.hub_combo.setCurrentIndex(self.hub_combo.findData(self.current_hub['id']))
        
@@ -234,11 +226,8 @@ class HubSettingsMainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             hub_id = self.hub_db_combo.currentData()
             result_dict = self.hub_mgr.set_current_db_hub(hub_id)
-            self.msg_label.setText(result_dict['message'])
-            if result_dict['status'] == 'error':
-                self.msg_label.setStyleSheet('color: red')
-            elif result_dict['status'] == 'success':
-                self.msg_label.setStyleSheet('color: green')
+            print('db', result_dict)
+            self.status_bar.set_msg(result_dict)
         else:
             self.hub_combo.setCurrentIndex(self.hub_combo.findData(self.current_hub['id']))
 
@@ -250,7 +239,7 @@ class HubSettingsMainWindow(QMainWindow):
     def edit_hub(self):
         curr_row = self.hub_table.currentRow()   
         if curr_row != -1:
-            hub_id = int(self.hub_table.item(curr_row, 2).text())
+            hub_id = int(self.hub_table.item(curr_row, 0).text())
             dlg_edit_hub = HubAddEdit(self, dlg_type='edit', hub_id=hub_id)
             dlg_edit_hub.resize(400, 200)
             dlg_edit_hub.show()
@@ -260,24 +249,22 @@ class HubSettingsMainWindow(QMainWindow):
         if  curr_row != -1:
             if caller == False:
                 hub_id = int(self.hub_table.item(self.hub_table.currentRow(), 0).text())
-                self.hub_msgbox.set_msg('Are you sure you want to delete this hub?')
-                self.hub_msgbox.set_return_func(self.del_hub, hub_id)
-                self.hub_msgbox.show()
+                self.hub_choicebox.set_msg('Are you sure you want to delete this hub?')
+                self.hub_choicebox.set_return_func(self.del_hub, hub_id)
+                self.hub_choicebox.show()
                 
         if caller == 'yes':
             hub_id = value
             result = self.hub_mgr.delete_hub(hub_id)
+            self.status_bar.set_msg(result)
             if result['status'] == 'success':
-                self.msg_label.setText(result['message'])
-                self.hub_msgbox.hide()
+                self.hub_choicebox.hide()
                 self.fill_hub_table()
             elif result['status'] == 'error':
-                self.msg_label.setText(result['message'])
-                self.msg_label.setStyleSheet('color: red')
-                self.hub_msgbox.hide()
+                self.hub_choicebox.hide()
                 
         elif caller == 'no':
-            self.hub_msgbox.hide()
+            self.hub_choicebox.hide()
 
     
        

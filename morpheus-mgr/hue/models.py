@@ -20,6 +20,7 @@ class HueBridge(BaseModel):
     ip_addr = CharField()
     key = CharField()
     name = CharField()
+    active = BooleanField(default=True)
 
 
 class HueDevice(BaseModel):
