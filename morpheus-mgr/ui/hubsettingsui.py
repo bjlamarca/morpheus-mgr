@@ -107,8 +107,8 @@ class HubSettingsMainWindow(QMainWindow):
         #### Main window layout
         tab_grid_layout = QGridLayout()
         tab_grid_layout.addWidget(connect_grpbox, 0, 0, 1, 1)
-        tab_grid_layout.addWidget(hub_list_grpbox, 1, 0, 1, 3)
-        tab_grid_layout.addWidget(self.log_viewer, 0, 1, 1, 1)
+        tab_grid_layout.addWidget(hub_list_grpbox, 0, 1, 1, 2)
+        tab_grid_layout.addLayout(log_layout, 1, 0, 1, 2)
         tab_V_layout = QVBoxLayout()
         tab_V_layout.addLayout(tab_grid_layout)
         tab_V_layout.addStretch()

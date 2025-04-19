@@ -1,7 +1,7 @@
 from system.hub import HubManger, HubSocket
 
 from ui.mainwin import start_app
-from hue.models import update_tables
+from system.models import update_tables
 
 
 if __name__ == "__main__":

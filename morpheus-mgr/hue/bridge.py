@@ -13,7 +13,7 @@ class HueBridgeUtils():
     def __init__(self):
         pass
 
-    def set_url(self, bridge_id):
+    def set_bridge(self, bridge_id):
         bridge = HueBridge.get(HueBridge.id == bridge_id)
         self.username = bridge.username
         self.ip_addr = bridge.ip_addr
@@ -88,7 +88,7 @@ class HueBridgeUtils():
                 if signal_grp:
                     signal.send(signal_grp, 'sync_bridge', msg_dict, True)
                 self.bridge_id = bridge_id
-                self.set_url(self.bridge_id)
+                self.set_bridge(self.bridge_id)
                 bridge_devices = self.get_items('devices')
                 for device in bridge_devices:
                     time.sleep(.05)
