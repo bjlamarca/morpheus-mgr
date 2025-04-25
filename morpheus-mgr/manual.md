@@ -1,4 +1,4 @@
-# Signals
+# Signal Examples
 *** Area
 area = system
     type = message
@@ -13,3 +13,6 @@ area = device
     device_id = 1
     command = on, off, dim
     value = 50
+
+area = 'interface'
+    type = ''

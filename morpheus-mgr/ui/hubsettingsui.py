@@ -171,9 +171,15 @@ class HubSettingsMainWindow(QMainWindow):
         self.socket.get_status('hub_mgr_ui')
         
     def test_socket(self):
-        #self.socket.send('A message!!!')
-        self.hub_mgr.get_db_status('hub_mgr_ui')
-        self.socket.get_status('hub_mgr_ui')
+        msg_dict = {
+            'area': 'system',
+            'type': 'message',
+            'status': 'info',
+            'message': 'Test message from hub_mgr_ui',
+
+        }
+        self.socket.send(msg_dict)
+        
 
 
     def fill_hub_combos(self):

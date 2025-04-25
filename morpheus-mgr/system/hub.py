@@ -317,6 +317,7 @@ class HubSocket:
             signal.send(signal_grp, cls, msg_dict, True)
         try:
             cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            cls.client.settimeout(5.0)
             cls.client.connect((cls.hub_host, cls.hub_port))
         except Exception as e:
             traceback.print_exc()
@@ -343,6 +344,10 @@ class HubSocket:
         
     def disconnect_socket(cls, signal_grp=None):
         msg_dict = {}
+        send_msg_dict = {}
+        send_msg_dict['area'] = 'system'
+        send_msg_dict['type'] = 'command'
+        send_msg_dict['value'] = 'socket_disconnect'
         msg_dict['area'] = 'system'
         msg_dict['type'] = 'message'
         msg_dict['status'] = 'info'
@@ -352,7 +357,7 @@ class HubSocket:
             signal.send(signal_grp, cls, msg_dict, True)
         try:
             if cls.hub_connected == 'connected':
-                message = '!DISCONNECT'
+                message = json.dumps(send_msg_dict)
                 msg = message.encode('utf-8')
                 msg_length = len(msg)
                 send_length = str(msg_length).encode('utf-8')
@@ -378,9 +383,10 @@ class HubSocket:
             logger.log('disconnect_socket', 'Disconnected from hub.', 'Hub: ' + cls.hub_host, 'INFO')
             return msg_dict
 
-    def send(cls, message):
+    def send(cls, msg_dict):
         try:
             if cls.hub_connected == 'connected':
+                message = json.dumps(msg_dict)
                 msg = message.encode('utf-8')
                 msg_length = len(msg)
                 send_length = str(msg_length).encode('utf-8')
@@ -406,23 +412,46 @@ class HubSocket:
         while True:
             try:
                 if cls.hub_connected == 'connected':
-                    message = '!KEEPALIVE'
+                    msg_dict['area'] = 'system'
+                    msg_dict['type'] = 'command'
+                    msg_dict['value'] = 'socket_keepalive'
+                    message = json.dumps(msg_dict)
                     msg = message.encode('utf-8')
                     msg_length = len(msg)
                     send_length = str(msg_length).encode('utf-8')
                     send_length += b' ' * (256 - len(send_length))
                     cls.client.send(send_length)
                     cls.client.send(msg)
+                    result = cls.client.recv(1024).decode('utf-8')
+                    print('keep alive result:', result)
                     strikes = 0
                 else:
                     pass    
                 time.sleep(5)
+            
+            except socket.timeout:
+                strikes += 1
+                print('Socket timeout, Strikes: ' + str(strikes))
+                msg_dict['area'] = 'system'
+                msg_dict['type'] = 'message'
+                msg_dict['status'] = 'warning'
+                msg_dict['message'] = 'Keep alive socket timeout, failed attemps: ' + str(strikes) 
+                logger.log('keep_alive', msg_dict['message'], '', 'WARNING') 
+                 
+                signal = Signal()
+                signal.send('system', cls, msg_dict, True)
+                if strikes > 5:
+                    result_dict = cls.reconnect_socket()
+                    if result_dict['status'] == 'error':
+                        break
+                    elif result_dict['status'] == 'success':
+                        strikes = 0
 
             except Exception as e:
                 time.sleep(5)
                 strikes += 1    
                 traceback.print_exc()
-                logger.log('keep_alive', 'Error sending keep alive to hub.', str(e) + traceback.format_exc(), 'ERROR')
+                logger.log('keep_alive', 'Error sending keep alive to hub. Strikes: ' + str(strikes), str(e) + traceback.format_exc(), 'WARNING')
                 msg_dict['area'] = 'system'
                 msg_dict['type'] = 'message'
                 msg_dict['status'] = 'warning'
@@ -431,7 +460,7 @@ class HubSocket:
                 signal = Signal()
                 signal.send('system', cls, msg_dict, True)
                 if strikes > 5:
-                    result_dict = cls.connect_socket()
+                    result_dict = cls.reconnect_socket()
                     if result_dict['status'] == 'error':
                         break
                     elif result_dict['status'] == 'success':
@@ -441,3 +470,10 @@ class HubSocket:
         result_dict = cls.connect_socket()
         thread = threading.Thread(target=cls.keep_alive, daemon=True)
         thread.start()
+
+    def reconnect_socket(cls):
+        msg_dict = {}
+        msg_dict['area'] = 'system'
+        msg_dict['status'] = 'success'
+        print('Reconnecting to hub.  Status: ' + str(cls.client))
+        return msg_dict
