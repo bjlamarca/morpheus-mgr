@@ -25,5 +25,7 @@ class Signal():
         for handler in cls.handlers:
             if handler[0] == group:
                 handler[1](sender,  data_dict)
+        if local_only == False:
+            pass
 
     
