@@ -12,16 +12,17 @@ class Signal():
         pass
         #print('Signal created', cls.handlers)
 
-    def connect(cls, group, handler):
-        cls.handlers.append([group, handler])
+    def connect(cls, handler, area_list=None):
+        cls.handlers.append([area_list, handler])
         #print('Signal connected', cls.handlers)
 
     def disconnect(cls, handler):
         cls.handlers.remove(handler)
         #print('Signal disconnected')
 
-    def send(cls, group, sender, data_dict, local_only=False):
+    def send(cls, sender, data_dict, local_only=False):
         #print('Signal sent', group, sender, data_dict)
+        area = data_dict['area']
         for handler in cls.handlers:
             if handler[0] == group:
                 handler[1](sender,  data_dict)

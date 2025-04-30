@@ -337,6 +337,7 @@ class HubSocket:
             msg_dict['message'] = 'Connected to hub.'
             signal.send(signal_grp, cls, msg_dict, True)
             logger.log('connect_socket', 'Connected to hub.', 'Hub: ' + cls.hub_host, 'INFO')
+            cls.update_status()
             return msg_dict
         
     def disconnect_socket(cls, signal_grp=None):
@@ -356,12 +357,8 @@ class HubSocket:
             if cls.hub_connected == 'connected':
                 message = json.dumps(send_msg_dict)
                 msg = message.encode('utf-8')
-                msg_length = len(msg)
-                send_length = str(msg_length).encode('utf-8')
-                send_length += b' ' * (256 - len(send_length))
-                cls.client.send(send_length)
                 cls.client.send(msg)
-                result = cls.client.recv(1024).decode('utf-8')
+                result = cls.client.recv(4096).decode('utf-8')
                 print('Disconnect result:', result)
             
         except Exception as e:
@@ -394,7 +391,7 @@ class HubSocket:
             traceback.print_exc()
             logger.log('send', 'Error sending to hub.', str(e) + traceback.format_exc(), 'ERROR')
         
-    def get_status(cls, signal_grp=None):
+    def update_status(cls, signal_grp=None):
         signal = Signal()
         msg_dict = {}
         msg_dict['area'] = 'system'
@@ -414,12 +411,8 @@ class HubSocket:
                     msg_dict['value'] = 'socket_keepalive'
                     message = json.dumps(msg_dict)
                     msg = message.encode('utf-8')
-                    msg_length = len(msg)
-                    send_length = str(msg_length).encode('utf-8')
-                    send_length += b' ' * (256 - len(send_length))
-                    cls.client.send(send_length)
                     cls.client.send(msg)
-                    result = cls.client.recv(1024).decode('utf-8')
+                    result = cls.client.recv(4096).decode('utf-8')
                     print('keep alive result:', result)
                     strikes = 0
                 else:
@@ -434,7 +427,7 @@ class HubSocket:
                 msg_dict['status'] = 'warning'
                 msg_dict['message'] = 'Keep alive socket timeout, failed attemps: ' + str(strikes) 
                 logger.log('keep_alive', msg_dict['message'], '', 'WARNING') 
-                 
+                cls.hub_connected = 'warning' 
                 signal = Signal()
                 signal.send('system', cls, msg_dict, True)
                 if strikes > 5:
@@ -447,13 +440,12 @@ class HubSocket:
             except Exception as e:
                 time.sleep(5)
                 strikes += 1    
-                traceback.print_exc()
                 logger.log('keep_alive', 'Error sending keep alive to hub. Strikes: ' + str(strikes), str(e) + traceback.format_exc(), 'WARNING')
                 msg_dict['area'] = 'system'
                 msg_dict['type'] = 'message'
                 msg_dict['status'] = 'warning'
                 msg_dict['message'] = 'Error sending keep alive to hub, failed attemps: ' + str(strikes)  
-                 
+                cls.hub_connected = 'warning' 
                 signal = Signal()
                 signal.send('system', cls, msg_dict, True)
                 if strikes > 5:
@@ -470,9 +462,30 @@ class HubSocket:
             thread = threading.Thread(target=cls.keep_alive, daemon=True)
             thread.start()
 
+    ####TODO - add reconnect to hub if connection is lost
     def reconnect_socket(cls):
-        msg_dict = {}
-        msg_dict['area'] = 'system'
-        msg_dict['status'] = 'success'
-        print('Reconnecting to hub.  Status: ' + str(cls.client))
-        return msg_dict
+        msg_dict = {
+            'area': 'system',
+        }
+        signal = Signal()
+        try:
+            #reconnect try
+            a = 1 / 0 #always throws an error to test reconnect
+        except Exception as e:
+            cls.hub_connected = 'error'
+            msg_dict['type'] = 'message'
+            msg_dict['status'] = 'error'
+            msg_dict['message'] = 'Error reconnecting to hub, connection terminated.'
+            signal.send('system', cls, msg_dict, True)
+            logger.log('reconnect_socket', msg_dict['message'], str(e) + traceback.format_exc(), 'ERROR')
+            
+        else:
+            cls.hub_connected = 'connected'
+            msg_dict['type'] = 'message'
+            msg_dict['message'] = 'Reconnected to hub.'
+            logger.log('reconnect_socket', msg_dict['message'], '', 'INFO')
+            msg_dict['type'] = 'update'
+            msg_dict['item'] = 'hub_connect'
+            msg_dict['value'] = 'connected'
+        
+        

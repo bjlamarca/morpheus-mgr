@@ -69,8 +69,8 @@ class HueDeviceAllWindow(QMainWindow):
         self.fill_device_table()
         self.fill_bridge_combo()
         
-        signal.connect('hue_ui', self.receive_signals)
-        signal.connect('system', self.receive_signals)
+        signal.connect(self.receive_signals)
+        signal.connect(self.receive_signals)
 
     def showEvent(self, event):
         pass

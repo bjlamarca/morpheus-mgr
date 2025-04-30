@@ -127,10 +127,10 @@ class HubSettingsMainWindow(QMainWindow):
         self.hub_choicebox.hide()
         #self.log_viewer.hide()
         
-        signal.connect('hub_mgr_ui', self.receive_signals)
-        signal.connect('system', self.receive_signals)
+        signal.connect(self.receive_signals)
+        signal.connect(self.receive_signals)
         self.hub_mgr.get_db_status('hub_mgr_ui')
-        self.socket.get_status('hub_mgr_ui')
+        self.socket.update_status()
         
         self.fill_hub_table()
         self.fill_hub_combos()
@@ -163,12 +163,12 @@ class HubSettingsMainWindow(QMainWindow):
         #self.log_viewer.update_log(msg_dict)      
         
     def connect_hub(self):
-        self.socket.connect_socket('hub_mgr_ui')
-        self.socket.get_status('hub_mgr_ui')
+        self.socket.connect_socket()
+        self.socket.update_status()
         
     def disconnect_hub(self):
-        self.socket.disconnect_socket('hub_mgr_ui')
-        self.socket.get_status('hub_mgr_ui')
+        self.socket.disconnect_socket()
+        self.socket.update_status()
         
     def test_socket(self):
         msg_dict = {
