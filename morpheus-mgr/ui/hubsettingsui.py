@@ -127,9 +127,8 @@ class HubSettingsMainWindow(QMainWindow):
         self.hub_choicebox.hide()
         #self.log_viewer.hide()
         
-        signal.connect(self.receive_signals)
-        signal.connect(self.receive_signals)
-        self.hub_mgr.get_db_status('hub_mgr_ui')
+        signal.connect(self.receive_signals, ['system'])
+        self.hub_mgr.get_db_status()
         self.socket.update_status()
         
         self.fill_hub_table()

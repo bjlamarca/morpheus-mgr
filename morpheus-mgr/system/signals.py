@@ -24,8 +24,12 @@ class Signal():
         #print('Signal sent', group, sender, data_dict)
         area = data_dict['area']
         for handler in cls.handlers:
-            if handler[0] == group:
-                handler[1](sender,  data_dict)
+            if handler[0]:
+                if area in handler[0]:
+                    handler[1](sender,  data_dict)
+                
+                
+                
         if local_only == False:
             pass
 

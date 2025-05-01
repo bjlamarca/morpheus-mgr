@@ -16,7 +16,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         signal = Signal()
-        signal.connect('main_status_bar', self.update_status_bar)
+        signal.connect(self.update_status_bar, ['system'])
         self.setWindowTitle("Morpheus")
         self.setWindowIcon(get_icon_obj("dream-catcher"))
         self.status_bar = self.statusBar()
@@ -92,7 +92,8 @@ class MainWindow(QMainWindow):
     
 
     def update_status_bar(self, sender, msg):
-        self.status_bar.showMessage(msg, 5000)
+        if msg['type'] == 'message':
+            self.status_bar.showMessage(msg['message'], 5000)
 
 
 def start_app():
