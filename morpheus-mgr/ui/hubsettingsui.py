@@ -99,7 +99,7 @@ class HubSettingsMainWindow(QMainWindow):
         log_layout = QHBoxLayout()
         self.log_viewer = LogViewer()
         log_layout.addWidget(self.log_viewer)
-        log_layout.addStretch()
+        #log_layout.addStretch()
 
         #### Status bar
         self.status_bar = StatusBar()
@@ -155,6 +155,8 @@ class HubSettingsMainWindow(QMainWindow):
                         self.hub_indicator.set_color('grey')
                     elif msg_dict['value'] == 'error':
                         self.hub_indicator.set_color('red')
+                    elif msg_dict['value'] == 'warning':
+                        self.hub_indicator.set_color('yellow')
             elif msg_dict['type'] == 'message':
                 self.log_viewer.update_log(msg_dict)
             
@@ -172,10 +174,8 @@ class HubSettingsMainWindow(QMainWindow):
     def test_socket(self):
         msg_dict = {
             'area': 'system',
-            'type': 'message',
-            'status': 'info',
-            'message': 'Test message from hub_mgr_ui',
-
+            'type': 'command',
+            'value': 'get_client_connected_list'
         }
         self.socket.send(msg_dict)
         

@@ -1,7 +1,7 @@
 import time, threading
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QLineEdit, QFrame,
                              QGroupBox, QGraphicsView, QGraphicsScene, QGraphicsTextItem, QTableWidget, 
-                             QTableWidgetItem, QCheckBox, QTextEdit)
+                             QTableWidgetItem, QCheckBox, QTextEdit, QHeaderView)
 from PySide6.QtGui import Qt, QPainter, QColor, QBrush, QFont, QPixmap, QPen, QPalette
 from PySide6.QtCore import QRect
 from PySide6.QtWebEngineWidgets import QWebEngineView
@@ -87,12 +87,16 @@ class LogViewer(QGroupBox):
             self.log_tbl.verticalHeader().setVisible(False)
             self.log_tbl.horizontalHeader().setVisible(False)
             self.log_tbl.setColumnCount(1)
-            self.log_tbl.setColumnWidth(0, 350)
+            #self.log_tbl.setColumnWidth(0, 350)
+            header = self.log_tbl.horizontalHeader()
+            #header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # Allows interactive resizing of other columns
+            header.setStretchLastSection(True)
             self.log_tbl.setRowCount(len(self.log))
             for index, logitem in enumerate(self.log):
                 if logitem['status'] == 'error':
                     row_color = QColor('red')
-                if logitem['status'] == 'warning':
+                elif logitem['status'] == 'warning':
                     row_color = QColor('orange')
                 elif logitem['status'] == 'info':
                     row_color = QColor('aqua')

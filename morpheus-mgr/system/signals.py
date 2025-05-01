@@ -1,3 +1,5 @@
+
+
 class Signal():
     _instance = None
     
@@ -5,6 +7,8 @@ class Signal():
         if cls._instance is None:
             cls.handlers = []
             cls._instance = super().__new__(cls)
+            from system.hub import HubSocket
+            cls.socket = HubSocket()
         
         return cls._instance
     
@@ -28,9 +32,8 @@ class Signal():
                 if area in handler[0]:
                     handler[1](sender,  data_dict)
                 
-                
-                
         if local_only == False:
-            pass
+            cls.socket.send(data_dict)
+            #print('Signal sent to socket', data_dict)
 
     

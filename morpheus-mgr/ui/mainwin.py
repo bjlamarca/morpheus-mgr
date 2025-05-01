@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
 
         #self.add_tab("huewin")
         #self.add_tab("huebridge")
-        #self.add_tab("hub_settings")
+        self.add_tab("hub_settings")
     
     def close_tab(self, index):
         self.tab_widget.removeTab(index)
