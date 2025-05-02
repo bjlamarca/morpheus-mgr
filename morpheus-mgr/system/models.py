@@ -13,8 +13,11 @@ class BaseModel(Model):
 
 class Hub(BaseModel):
     name = CharField()
-    ip_addr = CharField()
-    is_local_hub = BooleanField()
+    ip_address = CharField(null=True)
+    mac_address = CharField(null=True)
+    last_seen = DateTimeField(null=True)
+    primary = BooleanField(default=True)
+    connected_hub = ForeignKeyField(model='self', backref='secondary_hubs', on_delete='SET NULL', null=True)
 
     def __str__(self):
         return self.name
@@ -24,6 +27,16 @@ class Room(BaseModel):
 
     def __str__(self):
         return self.name
+
+class Client(BaseModel):
+    name = CharField()
+    ip_address = CharField(null=True)
+    mac_address = CharField(null=True)
+    last_seen = DateTimeField(null=True)
+    room = ForeignKeyField(model=Room, backref='clients', on_delete='SET NULL', null=True)
+    primary_hub = ForeignKeyField(model=Hub, backref='clients', on_delete='SET NULL', null=True)
+    
+
 
 class DeviceType(BaseModel):
     name = CharField()
@@ -76,7 +89,7 @@ class SystemLog(BaseModel):
 def update_tables():
     db = get_db()
     db.connect()
-    db.create_tables([Hub, Room, DeviceType, Device, ColorFamily, Color, ColorColorFamily, SystemLog])
+    db.create_tables([Hub, Room, DeviceType, Device, ColorFamily, Color, ColorColorFamily, SystemLog, Hub, Client])
     db.close()
     print('System tables updated')
     return True

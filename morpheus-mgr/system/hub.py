@@ -114,6 +114,12 @@ class HubManger:
             if hub['id'] == current_hub:
                 return hub
             
+    def get_client_ip_addr(cls):
+        f = open(BASE_DIR + '/settings.json', 'r')
+        settings = json.load(f)
+        client_ip = settings['client_ip_addr']
+        return client_ip
+            
     def set_current_hub(cls, hub_id):
         msg_dict = {}
         msg_dict['area'] = 'system'
@@ -312,6 +318,7 @@ class HubSocket:
         try:
             cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             cls.client.settimeout(5.0)
+            cls.client.bind(('', cls.hub_port))
             cls.client.connect((cls.hub_host, cls.hub_port))
         except Exception as e:
             traceback.print_exc()
@@ -410,7 +417,6 @@ class HubSocket:
                     strikes = 0
                 else:
                     pass    
-                
             
             except socket.timeout:
                 strikes += 1
