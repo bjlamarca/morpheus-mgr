@@ -164,7 +164,7 @@ class HubSettingsMainWindow(QMainWindow):
         #self.log_viewer.update_log(msg_dict)      
         
     def connect_hub(self):
-        self.socket.connect_socket()
+        self.socket.start_hub_connection()
         self.socket.update_status()
         
     def disconnect_hub(self):

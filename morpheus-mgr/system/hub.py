@@ -318,7 +318,7 @@ class HubSocket:
         try:
             cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             cls.client.settimeout(5.0)
-            cls.client.bind(('', cls.hub_port))
+            #cls.client.bind(('', cls.hub_port))
             cls.client.connect((cls.hub_host, cls.hub_port))
         except Exception as e:
             traceback.print_exc()
@@ -401,10 +401,10 @@ class HubSocket:
     def keep_alive(cls):
         msg_dict = {}
         strikes = 0
-        signal = Signal()
+        
         while True:
             try:
-                print('Keep alive thread running...' + cls.hub_connected)
+                #print('Keep alive thread running...' + cls.hub_connected)
                 if cls.hub_connected == 'connected' or cls.hub_connected == 'warning':
                     msg_dict['area'] = 'system'
                     msg_dict['type'] = 'command'
@@ -413,10 +413,11 @@ class HubSocket:
                     msg = message.encode('utf-8')
                     cls.client.send(msg)
                     result = cls.client.recv(4096).decode('utf-8')
-                    print('keep alive result:', result)
+                    #print('keep alive result:', result)
                     strikes = 0
                 else:
-                    pass    
+                    print('Keep alive thread stopped Hub not connected...')
+                    break    
             
             except socket.timeout:
                 strikes += 1
@@ -436,6 +437,7 @@ class HubSocket:
                         strikes = 0
 
             except Exception as e:
+                print('Error sending keep alive to hub:')
                 strikes += 1    
                 logger.log('keep_alive', 'Error sending keep alive to hub. Strikes: ' + str(strikes), str(e) + traceback.format_exc(), 'WARNING')
                 msg_dict['area'] = 'system'
@@ -443,6 +445,7 @@ class HubSocket:
                 msg_dict['status'] = 'warning'
                 msg_dict['message'] = 'Error sending keep alive to hub, failed attemps: ' + str(strikes)  
                 cls.hub_connected = 'warning' 
+                signal = Signal()
                 signal.send(cls.uuid, msg_dict, True)
                 if strikes > 5:
                     result_dict = cls.reconnect_socket()
@@ -450,9 +453,11 @@ class HubSocket:
                         break
                     elif result_dict['status'] == 'success':
                         strikes = 0
+            
+                    
             finally:
                 cls.update_status()
-                time.sleep(10) 
+                time.sleep(5) 
     
     def start_hub_connection(cls):
         result_dict = cls.connect_socket()
