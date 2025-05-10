@@ -24,13 +24,13 @@ class Signal():
         cls.handlers.remove(handler)
         #print('Signal disconnected')
 
-    def send(cls, sender, data_dict, local_only=False):
+    def send(cls, data_dict, local_only=False):
         #print('Signal sending', sender, data_dict)
         area = data_dict['area']
         for handler in cls.handlers:
             if handler[0]:
                 if area in handler[0]:
-                    handler[1](sender,  data_dict)
+                    handler[1](data_dict)
         if local_only == False:
             cls.socket.send(data_dict)
             #print('Signal sent to socket', data_dict)
