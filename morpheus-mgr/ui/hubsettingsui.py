@@ -8,6 +8,11 @@ from ui.utilities import get_icon_obj
 from system.hub import HubManger, HubSocket
 from system.signals import Signal
 
+from system.models import update_sys_tables
+from devices.models import update_device_tables
+from hue.models import update_hue_tables
+from soteria.models import update_soteria_table
+
 
 class HubSettingsMainWindow(QMainWindow):
     def __init__(self):
@@ -37,8 +42,8 @@ class HubSettingsMainWindow(QMainWindow):
         btn_connect_hub.clicked.connect(self.connect_hub)
         btn_disconnect_hub = QPushButton('Disconnect Hub')
         btn_disconnect_hub.clicked.connect(self.disconnect_hub)
-        btn_test_hub = QPushButton('Test Hub')
-        btn_test_hub.clicked.connect(self.test_socket)
+        btn_test_hub = QPushButton('Update Tables')
+        btn_test_hub.clicked.connect(self.update_tables)
         connect_grid_layout.setColumnStretch(0, 0)
         connect_grid_layout.setColumnStretch(1, 0)
         connect_grid_layout.setColumnStretch(2, 0)
@@ -171,13 +176,12 @@ class HubSettingsMainWindow(QMainWindow):
         self.socket.disconnect_socket()
         self.socket.update_status()
         
-    def test_socket(self):
-        msg_dict = {
-            'area': 'system',
-            'type': 'command',
-            'value': 'get_client_connected_list'
-        }
-        self.socket.send(msg_dict)
+    def update_tables(self):
+        update_device_tables()
+        update_sys_tables()
+        update_hue_tables()
+        update_soteria_table()
+    
         
 
 

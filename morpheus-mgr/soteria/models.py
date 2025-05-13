@@ -23,7 +23,9 @@ class SoteriaDevice(BaseModel):
     
 def update_soteria_table():
     # Create the SoteriaDevice table if it doesn't exist
-    soteria_db_proxy.connect()
-    soteria_db_proxy.create_tables([SoteriaDevice])
-    soteria_db_proxy.close()
+    db = soteria_db_proxy
+    db.connect()
+    db.create_tables([SoteriaDevice])
+    db.close()
+    print('Soteria tables updated')
     

@@ -7,6 +7,8 @@ import uuid
 from system.models import sys_db_proxy
 from hue.models import hue_db_proxy
 from devices.models import device_db_proxy
+from soteria.models import soteria_db_proxy
+from system.models import SystemLog
 
 logger = SystemLogger(__name__)
 
@@ -55,6 +57,7 @@ class HubManger:
             sys_db_proxy.initialize(cls.db)
             hue_db_proxy.initialize(cls.db)
             device_db_proxy.initialize(cls.db)
+            soteria_db_proxy.initialize(cls.db)
             from devices.models import Room
             test_qs = Room.select()
             count = test_qs.count()

@@ -1,4 +1,5 @@
 from peewee import *
+from playhouse.signals import Model, post_save
 
 device_db_proxy = Proxy()
 
@@ -29,3 +30,19 @@ class Device(BaseModel):
     
     def __str__(self):
         return self.name
+    
+@post_save(sender=Device)
+def post_save_device(sender, instance, created, **kwargs):
+    if created:
+        print(f"Device {instance.name} created with ID {instance.device_object_id}")
+    else:
+        print(f"Device {instance.name} updated with ID {instance.device_object_id}")
+
+
+def update_device_tables():
+    db = device_db_proxy
+    db.connect()
+    db.create_tables([Room, DeviceType, Device])
+    db.close()
+    print('Device tables updated')
+    return True

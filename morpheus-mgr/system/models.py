@@ -48,10 +48,10 @@ class SystemLog(BaseModel):
     details = CharField(null=True)
     level = CharField(null=True)    
 
-def update_tables():
+def update_sys_tables():
     db = sys_db_proxy
     db.connect()
-    db.create_tables()
+    db.create_tables([Hub, ColorFamily, Color, SystemLog, ColorColorFamily])
     db.close()
     print('System tables updated')
     return True

@@ -65,4 +65,5 @@ def update_hue_tables():
     db = hue_db_proxy
     db.connect()
     db.create_tables([HueBridge, HueDevice, HueLight, HueButton])
+    db.close()
     print('Hue tables updated')

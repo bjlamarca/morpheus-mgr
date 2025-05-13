@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
         
     
 
-    def update_status_bar(self, sender, msg):
+    def update_status_bar(self, msg):
         if msg['type'] == 'message':
             self.status_bar.showMessage(msg['message'], 5000)
 
