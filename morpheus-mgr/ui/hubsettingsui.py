@@ -138,7 +138,7 @@ class HubSettingsMainWindow(QMainWindow):
     def showEvent(self, event):
         pass
 
-    def receive_signals(self, sender, msg_dict):
+    def receive_signals(self, msg_dict):
         if msg_dict['area'] == 'system':
             if msg_dict['type'] == 'update':
                 if msg_dict['item'] == 'hub_db_connect':
@@ -234,7 +234,7 @@ class HubSettingsMainWindow(QMainWindow):
             print('db', result_dict)
             self.status_bar.set_msg(result_dict)
         else:
-            self.hub_combo.setCurrentIndex(self.hub_combo.findData(self.current_hub['id']))
+            self.hub_db_combo.setCurrentIndex(self.hub_combo.findData(self.current_db_hub['id']))
 
     def add_hub(self):
         dlg_add_hub = HubAddEdit(self, dlg_type='add')

@@ -2,12 +2,8 @@ from pathlib import Path
 import json, datetime, os
 from datetime import datetime
 
-
-
-
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
          
-
 LOG_LEVEL = (
         'VERBOSE',
         'DEBUG',
