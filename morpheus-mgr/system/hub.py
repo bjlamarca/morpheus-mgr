@@ -4,6 +4,9 @@ from peewee import PostgresqlDatabase
 from system.logger import SystemLogger
 from system.signals import Signal
 import uuid
+from system.models import sys_db_proxy
+from hue.models import hue_db_proxy
+from devices.models import device_db_proxy
 
 logger = SystemLogger(__name__)
 
@@ -47,7 +50,10 @@ class HubManger:
             cls.db = PostgresqlDatabase(cls.db_name, host=cls.db_host, port=cls.db_port, user=cls.db_user,
                 password=cls.db_password)
             #run a test query to see if connection is successful
-            from system.models import Room
+            sys_db_proxy.initialize(cls.db)
+            hue_db_proxy.initialize(cls.db)
+            device_db_proxy.initialize(cls.db)
+            from devices.models import Room
             test_qs = Room.select()
             count = test_qs.count()
         except Exception as e:

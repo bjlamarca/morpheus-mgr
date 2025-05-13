@@ -1,19 +1,12 @@
 
 from peewee import *
-from system.models import DeviceType
-from system.hub import HubManger
-from system.models import DeviceType
+from devices.models import DeviceType, Device
 
-
-def get_db():
-    hub_manager = HubManger()
-    db = hub_manager.db
-    return db
-
+hue_db_proxy = Proxy()
 
 class BaseModel(Model):
     class Meta:
-        database = get_db()
+        database = hue_db_proxy
 
 class HueBridge(BaseModel):
     username = CharField()
@@ -22,11 +15,9 @@ class HueBridge(BaseModel):
     name = CharField()
     active = BooleanField(default=True)
 
-
 class HueDevice(BaseModel):
-    #Morpheus categorization of Hue devices
-      
     device_type = ForeignKeyField(model=DeviceType, backref='hue_devices')
+    device = ForeignKeyField(model=Device, backref='hue_devices', on_delete='SET NULL', null=True)
     bridge = ForeignKeyField(model=HueBridge, backref='hue_devices')
     hue_id = CharField()
     model_id = CharField()
@@ -42,11 +33,9 @@ class HueDevice(BaseModel):
     battery_level = IntegerField(null=True)
     morph_sync = BooleanField()
     
-
     def __str__(self):
         return self.name
     
-
 class HueLight(BaseModel):
     device = ForeignKeyField(model=HueDevice, on_delete='CASCADE'),
     rid = CharField()
@@ -57,11 +46,10 @@ class HueLight(BaseModel):
     green = IntegerField(null=True)
     blue = IntegerField(null=True)
     effect = CharField(null=True)
-
+    
     def __str__(self):
         return self.rid
     
-
 class HueButton(BaseModel):
     device = ForeignKeyField(model=HueDevice, backref='hue_buttons')
     rid = CharField()
@@ -73,8 +61,8 @@ class HueButton(BaseModel):
         return self.name
     
 
-def update_tables():
-    db = get_db()
+def update_hue_tables():
+    db = hue_db_proxy
     db.connect()
     db.create_tables([HueBridge, HueDevice, HueLight, HueButton])
-    print('Hue tables created')
+    print('Hue tables updated')
