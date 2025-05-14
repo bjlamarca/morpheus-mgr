@@ -7,6 +7,7 @@ from ui.utilities import get_icon_obj
 from ui.widgets import ChoiceBox, LogViewer, StatusBar
 from hue.utilities import HueUtilities
 from soteria.models import SoteriaDevice
+from devices.models import DeviceType   
  
 
 
@@ -41,7 +42,7 @@ class SoteriaSettingsWindow(QMainWindow):
         hub_tbl_header = self.device_table.horizontalHeader()
         hub_tbl_header.setSectionResizeMode(QHeaderView.ResizeMode.Interactive) 
         hub_tbl_header.setStretchLastSection(True) 
-        self.device_table.setMinimumWidth(375)
+        self.device_table.setMinimumWidth(550)
         device_tbl_layout.addWidget(self.device_table)
         device_tbl_layout.addStretch()
 
@@ -92,10 +93,10 @@ class SoteriaSettingsWindow(QMainWindow):
         self.device_table.setColumnCount(5)
         self.device_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.device_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.device_table.setHorizontalHeaderLabels(['ID', 'Name', 'Type', 'IP Address', 'Identifier'])
-        #self.device_table.setColumnWidth(0, 50)
-        #self.device_table.setColumnWidth(1, 150)
-        self.device_table.verticalHeader().setVisible(False)
+        self.device_table.setHorizontalHeaderLabels(['ID', 'Name', 'Type', 'Connected', 'IP Address', ])
+        self.device_table.setColumnWidth(0, 50)
+        self.device_table.setColumnWidth(1, 150)
+        #self.device_table.verticalHeader().setVisible(False)
         #self.device_table.horizontalHeader().setStretchLastSection(True)
         device_qs = SoteriaDevice.select()
         self.device_table.setRowCount(device_qs.count())
@@ -104,8 +105,8 @@ class SoteriaSettingsWindow(QMainWindow):
             self.device_table.setItem(row, 0, QTableWidgetItem(str(device.id)))
             self.device_table.setItem(row, 1, QTableWidgetItem(device.name))
             self.device_table.setItem(row, 2, QTableWidgetItem(device.device_type.name))
-            self.device_table.setItem(row, 2, QTableWidgetItem(device.ip_addr))
-            self.device_table.setItem(row, 3, QTableWidgetItem(device.identifier))
+            self.device_table.setItem(row, 4, QTableWidgetItem(device.connected))
+            self.device_table.setItem(row, 3, QTableWidgetItem(device.ip_address))
             row += 1
 
     def add_device(self):
@@ -159,17 +160,23 @@ class SoteriaAddEdit(QDialog):
         
         device_layout = QVBoxLayout(self)
         
-        self.name = QLineEdit()
+        self.le_name = QLineEdit()
+        self.le_model_number = QLineEdit()
+        self.cmbox_device_type = QComboBox()
+        self.le_identifier = QLineEdit()
         self.ip_addr = QLineEdit()
-        self.username = QLineEdit()
-        self.key = QLineEdit()
-        
+        self.le_mac_addr = QLineEdit()
+        self.chkbx_supervised = QCheckBox()
+
         form_layout = QFormLayout()
-        form_layout.addRow("Name", self.name)
+        form_layout.addRow("Name", self.le_name)
+        form_layout.addRow("Model Number", self.le_model_number)
+        form_layout.addRow("Device Type", self.cmbox_device_type)
+        form_layout.addRow("Identifier", self.le_identifier)
         form_layout.addRow("IP Address", self.ip_addr)
-        form_layout.addRow("Username", self.username)
-        form_layout.addRow("Key", self.key)
-        
+        form_layout.addRow("MAC Address", self.le_mac_addr)
+        form_layout.addRow("Supervised", self.chkbx_supervised)
+       
         btn_layout = QHBoxLayout()
         btn_cancel = QPushButton('Cancel')
         btn_cancel.clicked.connect(self.close)
@@ -193,18 +200,38 @@ class SoteriaAddEdit(QDialog):
         device_layout.addLayout(msg_layout)
         device_layout.addStretch()
 
+        self.fill_cmbox()
         if self.dlg_type == 'edit':
-            device_obj = HueBridge.get_by_id(self.device_id)
-            self.name.setText(device_obj.name)
-            self.ip_addr.setText(device_obj.ip_addr)
-            self.username.setText(device_obj.username)
-            self.key.setText(device_obj.key)
+            device_obj = SoteriaDevice.get_by_id(self.device_id)
+            self.le_name.setText(device_obj.name)
+            self.le_model_number.setText(device_obj.model_number)
+            self.cmbox_device_type.setCurrentIndex(device_obj.device_type.id)
+            self.le_identifier.setText(device_obj.identifier)
+            self.ip_addr.setText(device_obj.ip_address)
+            self.le_mac_addr.setText(device_obj.mac_address)
+            self.chkbx_supervised.setChecked(device_obj.supervised)
 
-        
+    def fill_cmbox(self):
+        device_type_qs = DeviceType.select()
+        self.cmbox_device_type.clear()
+        for device_type in device_type_qs:
+            self.cmbox_device_type.addItem(device_type.display_name, device_type.id)
+        self.cmbox_device_type.setCurrentIndex(-1)
+        self.cmbox_device_type.setEditable(True)
+        self.cmbox_device_type.lineEdit().setPlaceholderText("Select Device Type")
         
     def add_device(self):
         hue_util = HueUtilities()
-        responce = hue_util.add_device(self.name.text(), self.ip_addr.text(), self.username.text(), self.key.text())
+        dev_dict = {
+            'name': self.le_name.text(),
+            'model_number': self.le_model_number.text(),
+            'device_type': self.cmbox_device_type.currentData(),
+            'identifier': self.le_identifier.text(),
+            'ip_address': self.ip_addr.text(),
+            'mac_address': self.le_mac_addr.text(),
+            'supervised': self.chkbx_supervised.isChecked()
+        }
+        responce = hue_util.add_device(dev_dict)
         if responce['status'] == 'success':
             self.parent().fill_device_table()
             self.close()

@@ -17,6 +17,8 @@ class SoteriaDevice(BaseModel):
     mac_address = CharField(null=True)
     last_seen = DateTimeField(null=True)
     supervised = BooleanField(default=False)
+    connected = BooleanField(default=False)
+    model_number = CharField(null=True)
     
     def __str__(self):
         return self.name

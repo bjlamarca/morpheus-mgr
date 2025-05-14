@@ -57,9 +57,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        #self.add_tab("huewin")
-        #self.add_tab("huebridge")
-        self.add_tab("hub_settings")
+        self.add_tab("soteria_settings")
     
     def close_tab(self, index):
         self.tab_widget.removeTab(index)
