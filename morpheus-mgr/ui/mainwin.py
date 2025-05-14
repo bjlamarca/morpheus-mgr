@@ -8,6 +8,7 @@ from PySide6.QtCore import Qt
 from ui.hue.hueui import HueDeviceAllWindow
 from ui.hue.huebridgeui import HueBridgeWindow
 from ui.hubsettingsui import HubSettingsMainWindow
+from ui.soteria.soteriasettingsui import SoteriaSettingsWindow
 from ui.utilities import load_stylesheet, get_icon_obj
 from system.signals import Signal
 
@@ -33,6 +34,7 @@ class MainWindow(QMainWindow):
         interface_menu = QMenu("Interfaces", self)
         hue_submenu = QMenu("Hue", self)
         interface_menu.addMenu(hue_submenu)
+        
         hue_dev_action = QAction("Devices", self)
         hue_dev_action.triggered.connect(lambda: self.add_tab("huedevices"))
         hue_bridge_action = QAction("Bridges", self)
@@ -40,6 +42,11 @@ class MainWindow(QMainWindow):
         hue_submenu.addAction(hue_dev_action)
         hue_submenu.addAction(hue_bridge_action)
         
+        soteria_submenu = QMenu("Soteria", self)
+        interface_menu.addMenu(soteria_submenu)
+        soteria_settings_action = QAction("Settings", self)
+        soteria_settings_action.triggered.connect(lambda: self.add_tab("soteria_settings"))
+        soteria_submenu.addAction(soteria_settings_action)
         menu_bar.addMenu(system_menu)
         menu_bar.addMenu(interface_menu)
         
@@ -73,6 +80,10 @@ class MainWindow(QMainWindow):
             hue_bridge_win = HueBridgeWindow()
             self.tab_widget.addTab(hue_bridge_win, "Hue - Bridges")
             self.tab_widget.setCurrentWidget(hue_bridge_win)
+        if name == "soteria_settings":
+            soteria_settings_win = SoteriaSettingsWindow()
+            self.tab_widget.addTab(soteria_settings_win, "Soteria - Settings")
+            self.tab_widget.setCurrentWidget(soteria_settings_win)
 
 
 
