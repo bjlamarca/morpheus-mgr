@@ -5,10 +5,10 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
 from PySide6.QtGui import QAction, QCloseEvent
 from PySide6.QtCore import Qt
 
-from ui.hue.hueui import HueDeviceAllWindow
-from ui.hue.huebridgeui import HueBridgeWindow
+from hue.hue_ui import HueDeviceAllWindow
+from hue.hue_bridge_ui import HueBridgeWindow
 from ui.hubsettingsui import HubSettingsMainWindow
-from ui.soteria.soteriasettingsui import SoteriaSettingsWindow
+from soteria.settings_ui import SoteriaSettingsWindow
 from ui.utilities import load_stylesheet, get_icon_obj
 from system.signals import Signal
 

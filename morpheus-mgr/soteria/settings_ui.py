@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from PySide6.QtGui import Qt
 from ui.utilities import get_icon_obj
 from ui.widgets import ChoiceBox, LogViewer, StatusBar
-from hue.utilities import HueUtilities
+from soteria.utilities import SoteriaUtilities
 from soteria.models import SoteriaDevice
 from devices.models import DeviceType   
  
@@ -104,9 +104,9 @@ class SoteriaSettingsWindow(QMainWindow):
         for device in device_qs:
             self.device_table.setItem(row, 0, QTableWidgetItem(str(device.id)))
             self.device_table.setItem(row, 1, QTableWidgetItem(device.name))
-            self.device_table.setItem(row, 2, QTableWidgetItem(device.device_type.name))
-            self.device_table.setItem(row, 4, QTableWidgetItem(device.connected))
-            self.device_table.setItem(row, 3, QTableWidgetItem(device.ip_address))
+            self.device_table.setItem(row, 2, QTableWidgetItem(device.device_type.display_name))
+            self.device_table.setItem(row, 3, QTableWidgetItem(device.connected))
+            self.device_table.setItem(row, 4, QTableWidgetItem(device.ip_address))
             row += 1
 
     def add_device(self):
@@ -126,22 +126,21 @@ class SoteriaSettingsWindow(QMainWindow):
         curr_row = self.device_table.currentRow()
         if  curr_row != -1:
             if caller == False:
-                device_id = int(self.device_table.item(self.device_table.currentRow(), 3).text())
+                device_id = int(self.device_table.item(self.device_table.currentRow(), 0).text())
                 self.device_choicebox.set_msg('Are you sure you want to delete this device?')
                 self.device_choicebox.set_return_func(self.del_device, device_id)
                 self.device_choicebox.show()
                 
         if caller == 'yes':
             device_id = value
-            hue_util = HueUtilities()
-            result = hue_util.delete_device(device_id)
+            soteria_util = SoteriaUtilities()
+            result = soteria_util.delete_device(device_id) 
             if result['status'] == 'success':
-                self.msg_label.setText(result['message'])
+                self.status_bar.set_msg(result)
                 self.device_choicebox.hide()
                 self.fill_device_table()
             elif result['status'] == 'error':
-                self.msg_label.setText(result['message'])
-                self.msg_label.setStyleSheet('color: red')
+                self.msg_label.setText(result)
                 self.device_choicebox.hide()
                 
         elif caller == 'no':
@@ -205,7 +204,7 @@ class SoteriaAddEdit(QDialog):
             device_obj = SoteriaDevice.get_by_id(self.device_id)
             self.le_name.setText(device_obj.name)
             self.le_model_number.setText(device_obj.model_number)
-            self.cmbox_device_type.setCurrentIndex(device_obj.device_type.id)
+            self.cmbox_device_type.setCurrentIndex(self.cmbox_device_type.findData(device_obj.device_type.id))
             self.le_identifier.setText(device_obj.identifier)
             self.ip_addr.setText(device_obj.ip_address)
             self.le_mac_addr.setText(device_obj.mac_address)
@@ -221,17 +220,9 @@ class SoteriaAddEdit(QDialog):
         self.cmbox_device_type.lineEdit().setPlaceholderText("Select Device Type")
         
     def add_device(self):
-        hue_util = HueUtilities()
-        dev_dict = {
-            'name': self.le_name.text(),
-            'model_number': self.le_model_number.text(),
-            'device_type': self.cmbox_device_type.currentData(),
-            'identifier': self.le_identifier.text(),
-            'ip_address': self.ip_addr.text(),
-            'mac_address': self.le_mac_addr.text(),
-            'supervised': self.chkbx_supervised.isChecked()
-        }
-        responce = hue_util.add_device(dev_dict)
+        soteria_util = SoteriaUtilities()
+        dev_dict = self.create_device_dict()
+        responce = soteria_util.add_device(dev_dict)
         if responce['status'] == 'success':
             self.parent().fill_device_table()
             self.close()
@@ -241,8 +232,9 @@ class SoteriaAddEdit(QDialog):
 
 
     def edit_device(self):
-        hue_util = HueUtilities()
-        responce = hue_util.edit_device(self.device_id, self.name.text(), self.ip_addr.text(), self.username.text(), self.key.text())
+        soteria_util = SoteriaUtilities()
+        dev_dict = self.create_device_dict()
+        responce = soteria_util.edit_device(dev_dict)
         if responce['status'] == 'success':
             self.parent().fill_device_table()
             self.close()
@@ -251,4 +243,15 @@ class SoteriaAddEdit(QDialog):
             self.msg_label.setStyleSheet("color: red")
 
 
-        
+    def create_device_dict(self):
+        dev_dict = {
+            'device_id': self.device_id,
+            'name': self.le_name.text(),
+            'model_number': self.le_model_number.text(),
+            'device_type': self.cmbox_device_type.currentData(),
+            'identifier': self.le_identifier.text(),
+            'ip_address': self.ip_addr.text(),
+            'mac_address': self.le_mac_addr.text(),
+            'supervised': self.chkbx_supervised.isChecked()
+        }
+        return dev_dict
