@@ -335,7 +335,8 @@ class HubSocket:
             cls.client.settimeout(5.0)
             #cls.client.bind(('', cls.hub_port))
             cls.client.connect((cls.hub_host, cls.hub_port))
-            msg = 'Hello from ' + cls.uuid
+            message = 'Hello from ' + cls.uuid
+            msg = message.encode('utf-8')
             cls.client.send(msg)
             result = cls.client.recv(4096).decode('utf-8')
             print('Connect result:', result)
