@@ -118,6 +118,15 @@ class HubManger:
             if hub['id'] == hub_id:
                 return hub
 
+    def get_soteria_info(cls):
+        soteria_dict = {}
+        f = open(BASE_DIR + '/settings.json', 'r')
+        settings = json.load(f)
+        soteria_dict['soteria_id'] = settings['soteria_id']
+        soteria_dict['soteria_identifier'] = settings['soteria_identifier']
+        f.close()
+        return soteria_dict
+
     def get_current_hub(cls):
         f = open(BASE_DIR + '/settings.json', 'r')
         settings = json.load(f)
@@ -330,21 +339,36 @@ class HubSocket:
         msg_dict['status'] = 'info'
         msg_dict['message'] = 'Connecting to hub...' 
         signal.send(msg_dict, True)
+        
         try:
             cls.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             cls.client.settimeout(5.0)
             #cls.client.bind(('', cls.hub_port))
             cls.client.connect((cls.hub_host, cls.hub_port))
-            message = 'Hello from ' + cls.uuid
+            sorteria_dict = cls.hub_mgr.get_soteria_info()
+            handshake_dict = {
+                'area': 'system',
+                'type': 'soteria_handshake',
+                'id': sorteria_dict['soteria_id'],
+                'identifier': sorteria_dict['soteria_identifier'],
+            }
+            message = json.dumps(handshake_dict)
             msg = message.encode('utf-8')
             cls.client.send(msg)
             result = cls.client.recv(4096).decode('utf-8')
-            print('Connect result:', result)
+            result_dict = json.loads(result) 
+            if result_dict['type'] == 'soteria_handshake':
+                if result_dict['status'] != 'success':
+                    msg_dict['status'] = 'error'
+                    msg_dict['message'] = 'Error connecting to hub.  Handshake failed.'
+                    logger.log('connect_socket', f'{msg_dict['message']} {result_dict['message']}', result, 'ERROR') 
+                    signal.send(msg_dict, True)
+                    print(result_dict)
+                    return msg_dict        
+            print('Connect result:', result_dict)
         except Exception as e:
             traceback.print_exc()
             cls.hub_connected = 'error'
-            msg_dict['area'] = 'system'
-            msg_dict['type'] = 'message'
             msg_dict['status'] = 'error'
             msg_dict['message'] = 'Error connecting to hub.'
             
@@ -353,8 +377,6 @@ class HubSocket:
             return msg_dict
         else:
             cls.hub_connected = 'connected'
-            msg_dict['area'] = 'system'
-            msg_dict['type'] = 'message'
             msg_dict['status'] = 'success'
             msg_dict['message'] = 'Connected to hub.'
             signal.send(msg_dict, True)

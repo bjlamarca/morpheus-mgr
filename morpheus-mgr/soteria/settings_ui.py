@@ -27,9 +27,13 @@ class SoteriaSettingsWindow(QMainWindow):
         btn_del_device = QPushButton('Delete Device')
         btn_del_device.clicked.connect(self.del_device)
         btn_del_device.setIcon(get_icon_obj('cross-circle'))
+        btn_refresh = QPushButton('') 
+        btn_refresh.setIcon(get_icon_obj('arrow-circle-double'))
+        btn_refresh.clicked.connect(self.fill_device_table)
         device_btn_layout.addWidget(btn_add_device, 0, 0, 1, 1)
         device_btn_layout.addWidget(btn_edit_device, 0, 1, 1, 1)
         device_btn_layout.addWidget(btn_del_device, 0, 2, 1, 1)
+        device_btn_layout.addWidget(btn_refresh, 0, 3, 1, 1)
         
         device_choicebox_layout = QHBoxLayout()
         self.device_choicebox = ChoiceBox()
@@ -105,7 +109,7 @@ class SoteriaSettingsWindow(QMainWindow):
             self.device_table.setItem(row, 0, QTableWidgetItem(str(device.id)))
             self.device_table.setItem(row, 1, QTableWidgetItem(device.name))
             self.device_table.setItem(row, 2, QTableWidgetItem(device.device_type.display_name))
-            self.device_table.setItem(row, 3, QTableWidgetItem(device.connected))
+            self.device_table.setItem(row, 3, QTableWidgetItem(str(device.connected)))
             self.device_table.setItem(row, 4, QTableWidgetItem(device.ip_address))
             row += 1
 

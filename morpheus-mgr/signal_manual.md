@@ -1,10 +1,19 @@
-# Signal Examples
-*** Area
+
 area = system
-    type = message
-        status = [clear, info, success, warning]
+type = message
+        status = [clear, info, success, warning, error]
         message = Hello World
     type = update
+    'type': 'soteria_handshake' {
+        'id': '',
+        'identifier': ''
+        'status'
+        'message'
+    }
+
+    type = command
+        value    
+
     *not complete*
 
 area = device
