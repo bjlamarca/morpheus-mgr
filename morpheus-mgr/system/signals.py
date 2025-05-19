@@ -7,8 +7,8 @@ class Signal():
         if cls._instance is None:
             cls.handlers = []
             cls._instance = super().__new__(cls)
-            from system.hub import HubSocket
-            cls.socket = HubSocket()
+            from system.hub import HubSoteria
+            cls.socket = HubSoteria()
         
         return cls._instance
     

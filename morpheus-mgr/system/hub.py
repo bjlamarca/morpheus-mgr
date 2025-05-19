@@ -309,7 +309,7 @@ class HubManger:
             return msg_dict
         
     
-class HubSocket:
+class HubSoteria:
     _instance = None
     hub_connected = 'disconnected'
     hub_host = ''
@@ -334,7 +334,7 @@ class HubSocket:
             'type': 'local',
             'uuid': cls.uuid,}}
         signal = Signal()
-        msg_dict['area'] = 'system'
+        msg_dict['area'] = 'soteria'
         msg_dict['type'] = 'message'
         msg_dict['status'] = 'info'
         msg_dict['message'] = 'Connecting to hub...' 
@@ -347,8 +347,8 @@ class HubSocket:
             cls.client.connect((cls.hub_host, cls.hub_port))
             sorteria_dict = cls.hub_mgr.get_soteria_info()
             handshake_dict = {
-                'area': 'system',
-                'type': 'soteria_handshake',
+                'area': 'soteria',
+                'type': 'handshake',
                 'id': sorteria_dict['soteria_id'],
                 'identifier': sorteria_dict['soteria_identifier'],
             }
@@ -357,7 +357,7 @@ class HubSocket:
             cls.client.send(msg)
             result = cls.client.recv(4096).decode('utf-8')
             result_dict = json.loads(result) 
-            if result_dict['type'] == 'soteria_handshake':
+            if result_dict['type'] == 'handshake':
                 if result_dict['status'] != 'success':
                     msg_dict['status'] = 'error'
                     msg_dict['message'] = 'Error connecting to hub.  Handshake failed.'
@@ -390,10 +390,10 @@ class HubSocket:
             'type': 'local',
             'uuid': cls.uuid,}}
         send_msg_dict = {}
-        send_msg_dict['area'] = 'system'
+        send_msg_dict['area'] = 'soteria'
         send_msg_dict['type'] = 'command'
         send_msg_dict['value'] = 'socket_disconnect'
-        msg_dict['area'] = 'system'
+        msg_dict['area'] = 'soteria'
         msg_dict['type'] = 'message'
         msg_dict['status'] = 'info'
         msg_dict['message'] = 'Disconnecting from hub...' 
@@ -438,7 +438,7 @@ class HubSocket:
         msg_dict = {'sender': {
             'type': 'local',
             'uuid': cls.uuid,}}
-        msg_dict['area'] = 'system'
+        msg_dict['area'] = 'soteria'
         msg_dict['type'] = 'update'
         msg_dict['item'] = 'hub_connect'
         msg_dict['value'] = cls.hub_connected
@@ -454,7 +454,7 @@ class HubSocket:
             try:
                 #print('Keep alive thread running...' + cls.hub_connected)
                 if cls.hub_connected == 'connected' or cls.hub_connected == 'warning':
-                    msg_dict['area'] = 'system'
+                    msg_dict['area'] = 'soteria'
                     msg_dict['type'] = 'command'
                     msg_dict['value'] = 'socket_keepalive'
                     message = json.dumps(msg_dict)
@@ -469,7 +469,7 @@ class HubSocket:
             
             except socket.timeout:
                 strikes += 1
-                msg_dict['area'] = 'system'
+                msg_dict['area'] = 'soteria'
                 msg_dict['type'] = 'message'
                 msg_dict['status'] = 'warning'
                 msg_dict['message'] = 'Keep alive socket timeout, failed attemps: ' + str(strikes) 
@@ -488,7 +488,7 @@ class HubSocket:
                 print('Error sending keep alive to hub:')
                 strikes += 1    
                 logger.log('keep_alive', 'Error sending keep alive to hub. Strikes: ' + str(strikes), str(e) + traceback.format_exc(), 'WARNING')
-                msg_dict['area'] = 'system'
+                msg_dict['area'] = 'soteria'
                 msg_dict['type'] = 'message'
                 msg_dict['status'] = 'warning'
                 msg_dict['message'] = 'Error sending keep alive to hub, failed attemps: ' + str(strikes)  
@@ -520,7 +520,7 @@ class HubSocket:
             'sender': {
             'type': 'local',
             'uuid': cls.uuid,},
-            'area': 'system',
+            'area': 'soteria',
         }
         signal = Signal()
         try:

@@ -5,7 +5,7 @@ from PySide6.QtGui import Qt
 
 from ui.widgets import ChoiceBox, LogViewer, CircleIndicatorWidget, StatusBar
 from ui.utilities import get_icon_obj
-from system.hub import HubManger, HubSocket
+from system.hub import HubManger, HubSoteria
 from system.signals import Signal
 
 from system.models import update_sys_tables
@@ -18,7 +18,7 @@ class HubSettingsMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         signal = Signal()
-        self.socket = HubSocket()
+        self.socket = HubSoteria()
         self.hub_mgr = HubManger() 
         self.current_hub = None
         self.current_db_hub = None
@@ -132,7 +132,7 @@ class HubSettingsMainWindow(QMainWindow):
         self.hub_choicebox.hide()
         #self.log_viewer.hide()
         
-        signal.connect(self.receive_signals, ['system'])
+        signal.connect(self.receive_signals, ['system', 'soteria'])
         self.hub_mgr.get_db_status()
         self.socket.update_status()
         
@@ -144,7 +144,7 @@ class HubSettingsMainWindow(QMainWindow):
         pass
 
     def receive_signals(self, msg_dict):
-        if msg_dict['area'] == 'system':
+        if msg_dict['area'] == 'system' or msg_dict['area'] == 'soteria':
             if msg_dict['type'] == 'update':
                 if msg_dict['item'] == 'hub_db_connect':
                     if msg_dict['value'] == 'connected':
